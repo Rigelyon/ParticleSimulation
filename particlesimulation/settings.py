@@ -1,0 +1,2 @@
+SCREEN_WIDTH, SCREEN_HEIGHT = 900, 600
+GAME_TITLE = 'Particle Simulation'

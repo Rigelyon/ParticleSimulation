@@ -11,7 +11,7 @@ class Particle(pygame.sprite.Sprite):
                  direction: pygame.math.Vector2,
                  speed: int,
                  size: int = 8,
-                 fade_speed: int = 120):
+                 fade_speed: int = 240):
         super().__init__(groups)
         self.pos = pos
         self.color = color
@@ -37,8 +37,8 @@ class Particle(pygame.sprite.Sprite):
         # print(f'{self.alpha} = {self.fade_speed} * {dt}')
 
     def check_pos(self):
-        if (self.pos[0] < -100 or self.pos[0] > SCREEN_WIDTH + 100 or
-                self.pos[1] < -100 or self.pos[1] > SCREEN_HEIGHT + 100):
+        if (self.pos[0] < 25 or self.pos[0] > SCREEN_WIDTH + 15 or
+                self.pos[1] < 25 or self.pos[1] > SCREEN_HEIGHT + 20):
             self.kill()
 
     def check_alpha(self):

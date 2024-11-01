@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/ParticleSimulation.iml" filepath="$PROJECT_DIR$/.idea/ParticleSimulation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../super-mario-python/.idea/super-mario-python.iml" filepath="$PROJECT_DIR$/../super-mario-python/.idea/super-mario-python.iml" />
     </modules>
   </component>
 </project>

@@ -6,7 +6,7 @@ from particlesimulation.settings import *
 class Menu:
     def __init__(self):
         self.screen = pygame.Rect(20, 20, SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.font_normal = pygame.font.SysFont(None, 24)
+        self.font_normal = pygame.font.SysFont(None, 22)
 
     def draw_text(self, surface, text, pos, justification: ('midleft', 'midright'), font, color):
         text = font.render(text, 1, color)

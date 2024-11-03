@@ -1,6 +1,6 @@
 import pygame.sprite
 
-from particlesimulation.settings import *
+from particlesimulation.constants import *
 
 
 class Particle(pygame.sprite.Sprite):
@@ -34,13 +34,6 @@ class Particle(pygame.sprite.Sprite):
         self.pos += self.direction * self.speed * dt
         self.rect.center = self.pos
 
-        # print(f'{self.alpha} = {self.fade_speed} * {dt}')
-
-    def check_pos(self):
-        if (self.pos[0] < 25 or self.pos[0] > SCREEN_WIDTH + 15 or
-                self.pos[1] < 25 or self.pos[1] > SCREEN_HEIGHT + 20):
-            self.kill()
-
     def check_alpha(self):
         if self.alpha < 0:
             self.kill()
@@ -51,6 +44,5 @@ class Particle(pygame.sprite.Sprite):
 
     def update(self, dt):
         self.move(dt)
-        self.check_pos()
         self.fade(dt)
         self.check_alpha()

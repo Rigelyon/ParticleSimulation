@@ -1,12 +1,10 @@
 import sys
-import time
-from random import uniform, randint
 
 import pygame
 
-from particlesimulation.particles.particle import Particle
-from particlesimulation.menu import Menu
-from particlesimulation.settings import *
+from particlesimulation.ui import UI
+from particlesimulation.particles.particles_manager import ParticlesManager
+from particlesimulation.constants import *
 
 
 class Game:
@@ -17,50 +15,44 @@ class Game:
         self.clock = pygame.time.Clock()
         self.is_running = True
         self.max_frame_rate = 60
-        self.particle_groups = pygame.sprite.Group()
 
-        self.menu = Menu()
+        self.particles = ParticlesManager()
+        self.ui = UI()
 
     def update(self):
         self.window.fill(BG_COLOR)
         self.dt = self.clock.tick(self.max_frame_rate) / 1000
 
-        particle_count = len(self.particle_groups)
-        self.menu.draw_menu(self.window)
-        self.menu.draw_text(self.window, f'Particle(s) count: {particle_count}', (20, SCREEN_HEIGHT + 20 + 15),
+        particle_count = len(self.particles.groups)
+        self.ui.draw_screen()
+        self.ui.draw_text(self.window, f'Particle(s) count: {particle_count}', (SCREEN_MARGIN, SCREENY_BOTTOM + SCREEN_MARGIN),
                             'midleft',
-                            self.menu.font_normal, BASE_COLOR)
-        self.menu.draw_text(self.window, f'Frame: 0/0', (20, SCREEN_HEIGHT + 20 + 35),
+                          self.ui.font_normal, BASE_COLOR)
+        self.ui.draw_text(self.window, f'Frame: 0/0', (SCREEN_MARGIN, SCREENY_BOTTOM + SCREEN_MARGIN + 22),
                             'midleft',
-                            self.menu.font_normal, BASE_COLOR)
-        self.menu.draw_text(self.window, f'Frame rate: {round(self.clock.get_fps(), 2)}',
-                            (SCREEN_WIDTH + 20, SCREEN_HEIGHT + 20 + 15), 'midright',
-                            self.menu.font_normal, BASE_COLOR)
+                          self.ui.font_normal, BASE_COLOR)
+        self.ui.draw_text(self.window, f'Frame rate: {round(self.clock.get_fps(), 2)}',
+                          (SCREENX_RIGHT, SCREENY_BOTTOM + SCREEN_MARGIN), 'midright',
+                          self.ui.font_normal, BASE_COLOR)
 
-        self.particle_groups.draw(self.window)
-        self.particle_groups.update(self.dt)
+        self.particles.groups.draw(self.ui.screen_surf)
+        self.particles.groups.update(self.dt)
 
-        # Kill particles when reach the threshold
-        while len(self.particle_groups) > MAX_PARTICLES:
-            self.particle_groups.sprites()[0].kill()
+        # Kill particles when reach the threshold and offscreen
+        self.particles.check_max_particles()
+        self.particles.kill_off_screen()
+
+        self.ui.blit(self.window)
 
         pygame.display.update()
-
-    def spawn_particle(self):
-        pos = (randint(30, SCREEN_WIDTH + 15), randint(25, SCREEN_HEIGHT + 20))
-        direction = pygame.math.Vector2(0, -1)
-        speed = randint(50, 100)
-        size = randint(5, 10)
-        Particle(groups=self.particle_groups, pos=pos, color=BASE_COLOR, direction=direction,
-                 speed=speed, size=size)
 
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.is_running = False
                 self.quit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                pass
+            if pygame.mouse.get_pressed()[0]:
+                print(event.pos)
 
     def quit(self):
         pygame.quit()
@@ -71,4 +63,4 @@ class Game:
             self.handle_events()
             self.update()
             for _ in range(100):
-                self.spawn_particle()
+                self.particles.spawn_particle()

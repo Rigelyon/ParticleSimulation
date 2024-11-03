@@ -1,12 +1,14 @@
 import pygame
 
-from particlesimulation.settings import *
+from particlesimulation.constants import *
 
 
-class Menu:
+class UI:
     def __init__(self):
-        self.screen = pygame.Rect(20, 20, SCREEN_WIDTH, SCREEN_HEIGHT)
         self.font_normal = pygame.font.SysFont(None, 22)
+
+    def draw_button(self, surface, text, pos):
+        pass
 
     def draw_text(self, surface, text, pos, justification: ('midleft', 'midright'), font, color):
         text = font.render(text, 1, color)
@@ -18,6 +20,10 @@ class Menu:
                 text_rect.midright = pos
         surface.blit(text, text_rect)
 
-    def draw_menu(self, surface):
-        # Draw screen border
-        pygame.draw.rect(surface, BASE_COLOR, self.screen, width=2)
+    def draw_screen(self):
+        self.screen_surf = pygame.surface.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        screen_rect = pygame.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+        pygame.draw.rect(self.screen_surf, BASE_COLOR, screen_rect, width=2)
+
+    def blit(self, surface):
+        surface.blit(self.screen_surf, (SCREENX_LEFT, SCREENY_TOP))

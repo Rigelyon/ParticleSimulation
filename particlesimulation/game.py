@@ -62,5 +62,4 @@ class Game:
         while self.is_running:
             self.handle_events()
             self.update()
-            for _ in range(100):
-                self.particles.spawn_particle()
+            self.particles.spawn_particle({'normal' : 10})

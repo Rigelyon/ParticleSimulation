@@ -1,0 +1,22 @@
+{
+  "@particle_button": {
+    "misc": {
+      "shape": "rounded_rectangle"
+    }
+  },
+  "@setting_indicator": {
+    "misc": {
+      "text_horiz_alignment": "left"
+    }
+  },
+  "@debug_text": {
+    "misc": {
+      "text_horiz_alignment": "left"
+    }
+  },
+  "#fps_counter": {
+    "misc": {
+      "text_horiz_alignment": "right"
+    }
+  }
+}

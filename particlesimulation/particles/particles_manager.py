@@ -14,7 +14,7 @@ class ParticlesManager:
     def spawn_particle(
         self,
         types: str,
-        amount: int,
+        multiplier: int,
         color: int,
         min_speed: int,
         max_speed: int,
@@ -24,11 +24,11 @@ class ParticlesManager:
         match types:
             case "normal":
                 self.draw_particle(
-                    amount, color, min_speed, max_speed, min_size, max_size
+                    multiplier, color, min_speed, max_speed, min_size, max_size
                 )
             case "snow":
                 self.draw_snow_particle(
-                    amount, color, min_speed, max_speed, min_size, max_size
+                    multiplier, color, min_speed, max_speed, min_size, max_size
                 )
 
     def kill_off_screen(self):

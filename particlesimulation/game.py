@@ -1,6 +1,7 @@
 import sys
 
 import pygame
+from pygame_gui import UIManager
 
 from particlesimulation.ui import UI
 from particlesimulation.particles.particles_manager import ParticlesManager
@@ -16,47 +17,36 @@ class Game:
         self.is_running = True
         self.max_frame_rate = 60
 
+        self.ui_manager = UIManager(
+            (WINDOW_WIDTH, WINDOW_HEIGHT), "particlesimulation/styles/theme.json"
+        )
+
         self.particles = ParticlesManager()
-        self.ui = UI()
+        self.ui = UI(self.ui_manager)
 
     def update(self):
-        self.window.fill(BG_COLOR)
+        self.window.fill(self.ui_manager.ui_theme.get_colour("dark_bg"))
         self.dt = self.clock.tick(self.max_frame_rate) / 1000
 
-        particle_count = len(self.particles.groups)
+        self.get_amount = len(self.particles.groups)
+        self.get_fps = round(self.clock.get_fps(), 2)
+        self.get_multiplier = self.ui.multiplier_slider.get_current_value()
+        self.get_lifetime = self.ui.lifetime_slider.get_current_value()
+        self.get_min_size = self.ui.min_size_slider.get_current_value()
+        self.get_max_size = self.ui.max_size_slider.get_current_value()
+        self.get_min_speed = self.ui.min_speed_slider.get_current_value()
+        self.get_max_speed = self.ui.max_speed_slider.get_current_value()
+
         self.ui.draw_screen()
-        self.ui.draw_text(
-            self.window,
-            f"Particle(s) count: {particle_count}",
-            (SCREEN_MARGIN, SCREENY_BOTTOM + SCREEN_MARGIN),
-            "midleft",
-            self.ui.font_normal,
-            BASE_COLOR,
-        )
-        self.ui.draw_text(
-            self.window,
-            f"Frame: 0/0",
-            (SCREEN_MARGIN, SCREENY_BOTTOM + SCREEN_MARGIN + 22),
-            "midleft",
-            self.ui.font_normal,
-            BASE_COLOR,
-        )
-        self.ui.draw_text(
-            self.window,
-            f"Frame rate: {round(self.clock.get_fps(), 2)}",
-            (SCREENX_RIGHT, SCREENY_BOTTOM + SCREEN_MARGIN),
-            "midright",
-            self.ui.font_normal,
-            BASE_COLOR,
-        )
-        self.ui.draw_text(
-            self.window,
-            f"Amount: {self.ui.size_slider.get_current_value()}",
-            (SCREENX_RIGHT + SCREEN_MARGIN, SCREENY_TOP + 20 + PARTICLE_BT_SIZE[1] * 2),
-            "midleft",
-            self.ui.font_normal,
-            BASE_COLOR,
-        )
+        self.ui.particle_count_label.set_text(f"Particle(s) amount: {self.get_amount}")
+        self.ui.fps_label.set_text(f"FPS: {self.get_fps}")
+
+        self.ui.multiplier_label.set_text(f"Multiplier: {self.get_multiplier}")
+        self.ui.lifetime_label.set_text(f"Lifetime: {self.get_lifetime}")
+        self.ui.min_size_label.set_text(f"Min Size: {self.get_min_size}")
+        self.ui.max_size_label.set_text(f"Max Size: {self.get_max_size}")
+        self.ui.min_speed_label.set_text(f"Min Speed: {self.get_min_speed}")
+        self.ui.max_speed_label.set_text(f"Max Speed: {self.get_max_speed}")
 
         self.particles.groups.draw(self.ui.screen_surf)
         self.particles.groups.update(self.dt)
@@ -65,9 +55,9 @@ class Game:
         self.particles.check_max_particles()
         self.particles.kill_off_screen()
 
-        self.ui.update(self.dt)
+        self.ui_manager.update(self.dt)
         self.ui.surface_blit(self.window)
-        self.ui.draw_ui(self.window)
+        self.ui_manager.draw_ui(self.window)
 
         pygame.display.update()
 
@@ -77,7 +67,7 @@ class Game:
                 self.is_running = False
                 self.quit()
 
-            self.ui.process_events(event)
+            self.ui_manager.process_events(event)
 
     def quit(self):
         pygame.quit()
@@ -88,6 +78,12 @@ class Game:
             self.handle_events()
             self.update()
 
-            print(self.ui.size_slider.get_current_value())
-
-            # self.particles.spawn_particle('snow', 1,1,1,1,1,1)
+            self.particles.spawn_particle(
+                "snow",
+                self.get_multiplier,
+                BASE_COLOR,
+                self.get_min_speed,
+                self.get_max_speed,
+                self.get_min_size,
+                self.get_max_size,
+            )

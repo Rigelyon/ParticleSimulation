@@ -7,39 +7,95 @@ from particlesimulation.constants import *
 
 class UI(UIManager):
     def __init__(self):
-        super().__init__((WINDOW_WIDTH, WINDOW_HEIGHT))
+        super().__init__((WINDOW_WIDTH, WINDOW_HEIGHT), "style/theme.json")
         self.font_normal = pygame.font.SysFont(None, 22)
 
-        self.circle_particle_bt = UIButton(pygame.Rect((SCREENX_RIGHT + SCREEN_MARGIN, SCREENY_TOP), PARTICLE_BT_SIZE),
-                                           'Circle', self)
+        self.circle_particle_bt = UIButton(
+            pygame.Rect((SCREENX_RIGHT + SCREEN_MARGIN, SCREENY_TOP), PARTICLE_BT_SIZE),
+            "Circle",
+            self,
+        )
         self.particle_bt2 = UIButton(
-            pygame.Rect((SCREENX_RIGHT + SCREEN_MARGIN + PARTICLE_BT_SIZE[0], SCREENY_TOP), PARTICLE_BT_SIZE),
-            'Circle', self)
+            pygame.Rect(
+                (SCREENX_RIGHT + SCREEN_MARGIN + PARTICLE_BT_SIZE[0], SCREENY_TOP),
+                PARTICLE_BT_SIZE,
+            ),
+            "Circle",
+            self,
+        )
         self.particle_bt3 = UIButton(
-            pygame.Rect((SCREENX_RIGHT + SCREEN_MARGIN + PARTICLE_BT_SIZE[0] * 2, SCREENY_TOP), PARTICLE_BT_SIZE),
-            'Circle', self)
+            pygame.Rect(
+                (SCREENX_RIGHT + SCREEN_MARGIN + PARTICLE_BT_SIZE[0] * 2, SCREENY_TOP),
+                PARTICLE_BT_SIZE,
+            ),
+            "Circle",
+            self,
+        )
         self.particle_bt4 = UIButton(
-            pygame.Rect((SCREENX_RIGHT + SCREEN_MARGIN + PARTICLE_BT_SIZE[0] * 3, SCREENY_TOP), PARTICLE_BT_SIZE),
-            'Circle', self)
+            pygame.Rect(
+                (SCREENX_RIGHT + SCREEN_MARGIN + PARTICLE_BT_SIZE[0] * 3, SCREENY_TOP),
+                PARTICLE_BT_SIZE,
+            ),
+            "Circle",
+            self,
+        )
         self.particle_bt5 = UIButton(
-            pygame.Rect((SCREENX_RIGHT + SCREEN_MARGIN, SCREENY_TOP + PARTICLE_BT_SIZE[1]), PARTICLE_BT_SIZE),
-            'Circle', self)
+            pygame.Rect(
+                (SCREENX_RIGHT + SCREEN_MARGIN, SCREENY_TOP + PARTICLE_BT_SIZE[1]),
+                PARTICLE_BT_SIZE,
+            ),
+            "Circle",
+            self,
+        )
         self.particle_bt6 = UIButton(
-            pygame.Rect((SCREENX_RIGHT + SCREEN_MARGIN + PARTICLE_BT_SIZE[0], SCREENY_TOP + PARTICLE_BT_SIZE[1]),
-                        PARTICLE_BT_SIZE),
-            'Circle', self)
+            pygame.Rect(
+                (
+                    SCREENX_RIGHT + SCREEN_MARGIN + PARTICLE_BT_SIZE[0],
+                    SCREENY_TOP + PARTICLE_BT_SIZE[1],
+                ),
+                PARTICLE_BT_SIZE,
+            ),
+            "Circle",
+            self,
+        )
         self.particle_bt7 = UIButton(
-            pygame.Rect((SCREENX_RIGHT + SCREEN_MARGIN + PARTICLE_BT_SIZE[0] * 2, SCREENY_TOP + PARTICLE_BT_SIZE[1]),
-                        PARTICLE_BT_SIZE),
-            'Circle', self)
+            pygame.Rect(
+                (
+                    SCREENX_RIGHT + SCREEN_MARGIN + PARTICLE_BT_SIZE[0] * 2,
+                    SCREENY_TOP + PARTICLE_BT_SIZE[1],
+                ),
+                PARTICLE_BT_SIZE,
+            ),
+            "Circle",
+            self,
+        )
         self.particle_bt8 = UIButton(
-            pygame.Rect((SCREENX_RIGHT + SCREEN_MARGIN + PARTICLE_BT_SIZE[0] * 3, SCREENY_TOP + PARTICLE_BT_SIZE[1]),
-                        PARTICLE_BT_SIZE),
-            'Circle', self)
+            pygame.Rect(
+                (
+                    SCREENX_RIGHT + SCREEN_MARGIN + PARTICLE_BT_SIZE[0] * 3,
+                    SCREENY_TOP + PARTICLE_BT_SIZE[1],
+                ),
+                PARTICLE_BT_SIZE,
+            ),
+            "Circle",
+            self,
+        )
 
         self.size_slider = UIHorizontalSlider(
-            pygame.Rect((SCREENX_RIGHT + SCREEN_MARGIN, SCREENY_TOP + 30 + PARTICLE_BT_SIZE[1] * 2), (230, 25)), 1,
-            (1, 100), self, anchors={'left': 'left', 'right': 'right'})
+            pygame.Rect(
+                (
+                    SCREENX_RIGHT + SCREEN_MARGIN,
+                    SCREENY_TOP + 30 + PARTICLE_BT_SIZE[1] * 2,
+                ),
+                (230, 25),
+            ),
+            1,
+            (1, 100),
+            self,
+            anchors={"left": "left", "right": "right"},
+        )
+
+        self.particle_amount = UILabel
 
     def draw_button(self, surface, text, pos, size, color, color_hover, font, rect):
         button_rect = pygame.Rect(pos, size)
@@ -57,13 +113,15 @@ class UI(UIManager):
         # icon_rect = icon.get_rect(center=rect.center)
         # surface.blit(icon, icon_rect)
 
-    def draw_text(self, surface, text, pos, justification: ('midleft', 'midright'), font, color):
+    def draw_text(
+        self, surface, text, pos, justification: ("midleft", "midright"), font, color
+    ):
         text = font.render(text, 1, color)
         text_rect = text.get_rect()
         match justification:
-            case 'midleft':
+            case "midleft":
                 text_rect.midleft = pos
-            case 'midright':
+            case "midright":
                 text_rect.midright = pos
         surface.blit(text, text_rect)
 

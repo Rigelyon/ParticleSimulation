@@ -25,20 +25,38 @@ class Game:
 
         particle_count = len(self.particles.groups)
         self.ui.draw_screen()
-        self.ui.draw_text(self.window, f'Particle(s) count: {particle_count}',
-                          (SCREEN_MARGIN, SCREENY_BOTTOM + SCREEN_MARGIN),
-                          'midleft',
-                          self.ui.font_normal, BASE_COLOR)
-        self.ui.draw_text(self.window, f'Frame: 0/0', (SCREEN_MARGIN, SCREENY_BOTTOM + SCREEN_MARGIN + 22),
-                          'midleft',
-                          self.ui.font_normal, BASE_COLOR)
-        self.ui.draw_text(self.window, f'Frame rate: {round(self.clock.get_fps(), 2)}',
-                          (SCREENX_RIGHT, SCREENY_BOTTOM + SCREEN_MARGIN), 'midright',
-                          self.ui.font_normal, BASE_COLOR)
-        self.ui.draw_text(self.window, f'Amount: {self.ui.size_slider.get_current_value()}',
-                          (SCREENX_RIGHT + SCREEN_MARGIN, SCREENY_TOP + 20 + PARTICLE_BT_SIZE[1] * 2),
-                          'midleft',
-                          self.ui.font_normal, BASE_COLOR)
+        self.ui.draw_text(
+            self.window,
+            f"Particle(s) count: {particle_count}",
+            (SCREEN_MARGIN, SCREENY_BOTTOM + SCREEN_MARGIN),
+            "midleft",
+            self.ui.font_normal,
+            BASE_COLOR,
+        )
+        self.ui.draw_text(
+            self.window,
+            f"Frame: 0/0",
+            (SCREEN_MARGIN, SCREENY_BOTTOM + SCREEN_MARGIN + 22),
+            "midleft",
+            self.ui.font_normal,
+            BASE_COLOR,
+        )
+        self.ui.draw_text(
+            self.window,
+            f"Frame rate: {round(self.clock.get_fps(), 2)}",
+            (SCREENX_RIGHT, SCREENY_BOTTOM + SCREEN_MARGIN),
+            "midright",
+            self.ui.font_normal,
+            BASE_COLOR,
+        )
+        self.ui.draw_text(
+            self.window,
+            f"Amount: {self.ui.size_slider.get_current_value()}",
+            (SCREENX_RIGHT + SCREEN_MARGIN, SCREENY_TOP + 20 + PARTICLE_BT_SIZE[1] * 2),
+            "midleft",
+            self.ui.font_normal,
+            BASE_COLOR,
+        )
 
         self.particles.groups.draw(self.ui.screen_surf)
         self.particles.groups.update(self.dt)

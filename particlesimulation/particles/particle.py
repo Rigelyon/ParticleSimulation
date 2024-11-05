@@ -4,14 +4,16 @@ from particlesimulation.constants import *
 
 
 class Particle(pygame.sprite.Sprite):
-    def __init__(self,
-                 groups: pygame.sprite.Group,
-                 pos: list[int],
-                 color: str,
-                 direction: pygame.math.Vector2,
-                 speed: int,
-                 size: int = 8,
-                 fade_speed: int = 240):
+    def __init__(
+        self,
+        groups: pygame.sprite.Group,
+        pos: list[int],
+        color: str,
+        direction: pygame.math.Vector2,
+        speed: int,
+        size: int = 8,
+        fade_speed: int = 240,
+    ):
         super().__init__(groups)
         self.pos = pos
         self.color = color
@@ -26,8 +28,12 @@ class Particle(pygame.sprite.Sprite):
     def create_surf(self):
         self.image = pygame.Surface((self.size, self.size)).convert_alpha()
         self.image.set_colorkey(BG_COLOR)
-        pygame.draw.circle(surface=self.image, color=self.color, center=(self.size / 2, self.size / 2),
-                           radius=self.size / 2)
+        pygame.draw.circle(
+            surface=self.image,
+            color=self.color,
+            center=(self.size / 2, self.size / 2),
+            radius=self.size / 2,
+        )
         self.rect = self.image.get_rect(center=self.pos)
 
     def move(self, dt):

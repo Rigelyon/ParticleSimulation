@@ -78,6 +78,7 @@ class Game:
             self.handle_events()
             self.update()
 
+            # TODO: Switching particles
             self.particles.spawn_particle(
                 "snow",
                 self.get_multiplier,

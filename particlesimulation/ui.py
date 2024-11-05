@@ -22,6 +22,15 @@ class UI:
 
         self.draw_components(ui_manager)
 
+        # TODO:
+        #   - Min and Max value handling
+        #   - Define default value
+        #   - Color picker
+        #   - Play button
+        #   - Pause button
+        #   - Clear button
+        #   - Apple button
+
     def draw_components(self, ui_manager):
         self.particle_count_label = UILabel(
             pygame.Rect((SCREENX_LEFT, SCREENY_BOTTOM + SCREEN_SPACING), (300, 20)),
@@ -212,18 +221,6 @@ class UI:
             ui_manager,
             anchors={"top": "top", "top_target": self.max_speed_label},
         )
-
-    def draw_text(
-        self, surface, text, pos, justification: ("midleft", "midright"), font, color
-    ):
-        text = font.render(text, 1, color)
-        text_rect = text.get_rect()
-        match justification:
-            case "midleft":
-                text_rect.midleft = pos
-            case "midright":
-                text_rect.midright = pos
-        surface.blit(text, text_rect)
 
     def draw_screen(self):
         self.screen_surf = pygame.surface.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))

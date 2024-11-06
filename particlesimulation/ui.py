@@ -42,12 +42,12 @@ class UI:
 
         if min_size > max_size:
             self.min_size_slider.set_current_value(max_size - 1)
-        elif max_size < min_size:
+        if max_size < min_size:
             self.max_size_slider.set_current_value(min_size + 1)
 
         if min_speed > max_speed:
             self.min_speed_slider.set_current_value(max_speed - 1)
-        elif max_speed < min_speed:
+        if max_speed < min_speed:
             self.max_speed_slider.set_current_value(min_speed + 1)
 
     def draw_components(self, ui_manager):

@@ -57,6 +57,7 @@ class Game:
 
         self.ui_manager.update(self.dt)
         self.ui.surface_blit(self.window)
+        self.ui.enforce_slider_limit()
         self.ui_manager.draw_ui(self.window)
 
         pygame.display.update()
@@ -66,6 +67,8 @@ class Game:
             if event.type == pygame.QUIT:
                 self.is_running = False
                 self.quit()
+            if event.type == pygame.USEREVENT:
+                self.ui.enforce_slider_limit()
 
             self.ui_manager.process_events(event)
 

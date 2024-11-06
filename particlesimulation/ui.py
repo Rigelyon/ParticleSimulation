@@ -1,4 +1,5 @@
 import pygame
+from pygame import Event
 from pygame_gui.elements import (
     UIHorizontalSlider,
     UILabel,
@@ -19,17 +20,35 @@ class UI:
         self.start_x = SCREENX_RIGHT + SCREEN_SPACING
         self.start_y = SCREENY_TOP
         self.size_x, self.size_y = PARTICLE_BT_SIZE
+        self.max_size = 200
+        self.max_speed = 500
 
         self.draw_components(ui_manager)
 
         # TODO:
-        #   - Min and Max value handling
-        #   - Define default value
         #   - Color picker
         #   - Play button
         #   - Pause button
         #   - Clear button
         #   - Apple button
+        #   - Use dropdown instead of buttons(?)
+        #   - Try to use horizontal scroll container
+
+    def enforce_slider_limit(self):
+        min_size = self.min_size_slider.get_current_value()
+        max_size = self.max_size_slider.get_current_value()
+        min_speed = self.min_speed_slider.get_current_value()
+        max_speed = self.max_speed_slider.get_current_value()
+
+        if min_size > max_size:
+            self.min_size_slider.set_current_value(max_size - 1)
+        elif max_size < min_size:
+            self.max_size_slider.set_current_value(min_size + 1)
+
+        if min_speed > max_speed:
+            self.min_speed_slider.set_current_value(max_speed - 1)
+        elif max_speed < min_speed:
+            self.max_speed_slider.set_current_value(min_speed + 1)
 
     def draw_components(self, ui_manager):
         self.particle_count_label = UILabel(
@@ -169,7 +188,7 @@ class UI:
         self.min_size_slider = UIHorizontalSlider(
             pygame.Rect((self.start_x, self.spacing), (235, 25)),
             1,
-            (1, 100),
+            (1, self.max_size),
             ui_manager,
             anchors={"top": "top", "top_target": self.min_size_label},
         )
@@ -184,8 +203,8 @@ class UI:
 
         self.max_size_slider = UIHorizontalSlider(
             pygame.Rect((self.start_x, self.spacing), (235, 25)),
-            1,
-            (1, 100),
+            10,
+            (2, self.max_size),
             ui_manager,
             anchors={"top": "top", "top_target": self.max_size_label},
         )
@@ -201,7 +220,7 @@ class UI:
         self.min_speed_slider = UIHorizontalSlider(
             pygame.Rect((self.start_x, self.spacing), (235, 25)),
             1,
-            (1, 100),
+            (1, self.max_speed),
             ui_manager,
             anchors={"top": "top", "top_target": self.min_speed_label},
         )
@@ -216,8 +235,8 @@ class UI:
 
         self.max_speed_slider = UIHorizontalSlider(
             pygame.Rect((self.start_x, self.spacing), (235, 25)),
-            1,
-            (1, 100),
+            20,
+            (2, self.max_speed),
             ui_manager,
             anchors={"top": "top", "top_target": self.max_speed_label},
         )

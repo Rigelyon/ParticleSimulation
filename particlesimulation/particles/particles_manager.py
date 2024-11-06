@@ -3,7 +3,6 @@ from random import randint, choice
 import pygame
 
 from particlesimulation.particles.particle import Particle
-from particlesimulation.ui import UI
 from particlesimulation.constants import *
 
 

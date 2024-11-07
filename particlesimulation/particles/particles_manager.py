@@ -19,15 +19,31 @@ class ParticlesManager:
         max_speed: int,
         min_size: int,
         max_size: int,
+        min_fade: int,
+        max_fade: int,
     ):
         match types:
             case "normal":
                 self.draw_particle(
-                    multiplier, color, min_speed, max_speed, min_size, max_size
+                    multiplier,
+                    color,
+                    min_speed,
+                    max_speed,
+                    min_size,
+                    max_size,
+                    min_fade,
+                    max_fade,
                 )
             case "snow":
                 self.draw_snow_particle(
-                    multiplier, color, min_speed, max_speed, min_size, max_size
+                    multiplier,
+                    color,
+                    min_speed,
+                    max_speed,
+                    min_size,
+                    max_size,
+                    min_fade,
+                    max_fade,
                 )
 
     def kill_off_screen(self):
@@ -52,12 +68,15 @@ class ParticlesManager:
         max_speed=100,
         min_size=5,
         max_size=10,
+        min_fade=1,
+        max_fade=10,
     ):
         for i in range(amount):
             pos = (randint(0, SCREEN_WIDTH), randint(0, SCREEN_HEIGHT))
             direction = pygame.math.Vector2(0, 0)
             speed = randint(min_speed, max_speed)
             size = randint(min_size, max_size)
+            fade_speed = randint(min_fade, max_fade)
             Particle(
                 groups=self.groups,
                 pos=pos,
@@ -65,7 +84,7 @@ class ParticlesManager:
                 direction=direction,
                 speed=speed,
                 size=size,
-                fade_speed=100,
+                fade_speed=fade_speed,
             )
 
     def draw_snow_particle(
@@ -76,12 +95,16 @@ class ParticlesManager:
         max_speed=100,
         min_size=5,
         max_size=10,
+        min_fade=1,
+        max_fade=10,
     ):
         for i in range(amount):
             pos = (randint(0, SCREEN_WIDTH), randint(-20, SCREEN_HEIGHT - 20))
             direction = pygame.math.Vector2(0, 1)
             speed = randint(min_speed, max_speed)
             size = randint(min_size, max_size)
+            fade_speed = randint(min_fade, max_fade)
+            print(fade_speed)
             Particle(
                 groups=self.groups,
                 pos=pos,
@@ -89,6 +112,7 @@ class ParticlesManager:
                 direction=direction,
                 speed=speed,
                 size=size,
+                fade_speed=fade_speed,
             )
 
     def kill_on_cursor(self):

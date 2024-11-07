@@ -32,7 +32,8 @@ class Game:
         self.get_amount = len(self.particles.groups)
         self.get_fps = round(self.clock.get_fps(), 2)
         self.get_multiplier = self.ui.multiplier_slider.get_current_value()
-        self.get_lifetime = self.ui.lifetime_slider.get_current_value()
+        self.get_min_fade = self.ui.min_fade_slider.get_current_value()
+        self.get_max_fade = self.ui.max_fade_slider.get_current_value()
         self.get_min_size = self.ui.min_size_slider.get_current_value()
         self.get_max_size = self.ui.max_size_slider.get_current_value()
         self.get_min_speed = self.ui.min_speed_slider.get_current_value()
@@ -43,7 +44,8 @@ class Game:
         self.ui.fps_label.set_text(f"FPS: {self.get_fps}")
 
         self.ui.multiplier_label.set_text(f"Multiplier: {self.get_multiplier}")
-        self.ui.lifetime_label.set_text(f"Lifetime: {self.get_lifetime}")
+        self.ui.min_fade_label.set_text(f"Min Fade Speed: {self.get_min_fade}")
+        self.ui.max_fade_label.set_text(f"Max Fade Speed: {self.get_max_fade}")
         self.ui.min_size_label.set_text(f"Min Size: {self.get_min_size}")
         self.ui.max_size_label.set_text(f"Max Size: {self.get_max_size}")
         self.ui.min_speed_label.set_text(f"Min Speed: {self.get_min_speed}")
@@ -91,4 +93,6 @@ class Game:
                 self.get_max_speed,
                 self.get_min_size,
                 self.get_max_size,
+                self.get_min_fade,
+                self.get_max_fade,
             )

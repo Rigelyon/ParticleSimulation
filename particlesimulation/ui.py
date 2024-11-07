@@ -21,8 +21,10 @@ class UI:
         self.start_x = 0
         self.start_y = 0
         self.size_x, self.size_y = PARTICLE_BT_SIZE
-        self.max_size = 200
-        self.max_speed = 500
+        self.default_min_fade = 100
+        self.default_max_fade = 800
+        self.default_max_size = 200
+        self.default_max_speed = 500
 
         self.draw_container(ui_manager)
         self.draw_components(ui_manager, self.scroll_container)
@@ -37,6 +39,8 @@ class UI:
         #   - Try to use horizontal scroll container
 
     def enforce_slider_limit(self):
+        min_fade = self.min_fade_slider.get_current_value()
+        max_fade = self.max_fade_slider.get_current_value()
         min_size = self.min_size_slider.get_current_value()
         max_size = self.max_size_slider.get_current_value()
         min_speed = self.min_speed_slider.get_current_value()
@@ -51,6 +55,11 @@ class UI:
             self.min_speed_slider.set_current_value(max_speed - 1)
         if max_speed < min_speed:
             self.max_speed_slider.set_current_value(min_speed + 1)
+
+        if min_fade > max_fade:
+            self.min_fade_slider.set_current_value(max_fade - 1)
+        if max_fade < min_fade:
+            self.max_fade_slider.set_current_value(min_fade + 1)
 
     def draw_container(self, ui_manager):
         self.scroll_container = UIScrollingContainer(
@@ -68,7 +77,6 @@ class UI:
             ui_manager,
             object_id=ObjectID(class_id="@debug_text"),
         )
-
         self.frame_label = UILabel(
             pygame.Rect((SCREENX_LEFT, self.spacing), (300, 20)),
             "Frame: 0/0",
@@ -76,7 +84,6 @@ class UI:
             anchors={"top": "top", "top_target": self.particle_count_label},
             object_id=ObjectID(class_id="@debug_text"),
         )
-
         self.fps_label = UILabel(
             pygame.Rect(
                 (SCREENX_RIGHT - 150, SCREENY_BOTTOM + SCREEN_SPACING), (150, 20)
@@ -164,6 +171,7 @@ class UI:
             },
             object_id=ObjectID(class_id="@particle_button"),
         )
+
         self.multiplier_label = UILabel(
             pygame.Rect((self.start_x, self.separator_spacing), (200, 20)),
             "Multiplier:",
@@ -172,7 +180,6 @@ class UI:
             anchors={"top": "top", "top_target": self.firefly_bt},
             object_id=ObjectID(class_id="@setting_indicator"),
         )
-
         self.multiplier_slider = UIHorizontalSlider(
             pygame.Rect((self.start_x, self.spacing), (235, 25)),
             1,
@@ -182,22 +189,38 @@ class UI:
             anchors={"top": "top", "top_target": self.multiplier_label},
         )
 
-        self.lifetime_label = UILabel(
-            pygame.Rect((self.start_x, self.spacing), (200, 20)),
-            "Lifetime:",
+        self.min_fade_label = UILabel(
+            pygame.Rect((self.start_x, self.separator_spacing), (200, 20)),
+            "Min Fade Speed:",
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.multiplier_slider},
             object_id=ObjectID(class_id="@setting_indicator"),
         )
-
-        self.lifetime_slider = UIHorizontalSlider(
+        self.min_fade_slider = UIHorizontalSlider(
             pygame.Rect((self.start_x, self.spacing), (235, 25)),
-            1,
-            (1, 100),
+            self.default_min_fade,
+            (self.default_min_fade, self.default_max_fade - 1),
             ui_manager,
             container,
-            anchors={"top": "top", "top_target": self.lifetime_label},
+            anchors={"top": "top", "top_target": self.min_fade_label},
+        )
+
+        self.max_fade_label = UILabel(
+            pygame.Rect((self.start_x, self.spacing), (200, 20)),
+            "Max Fade Speed:",
+            ui_manager,
+            container,
+            anchors={"top": "top", "top_target": self.min_fade_slider},
+            object_id=ObjectID(class_id="@setting_indicator"),
+        )
+        self.max_fade_slider = UIHorizontalSlider(
+            pygame.Rect((self.start_x, self.spacing), (235, 25)),
+            self.default_min_fade + 1,
+            (self.default_min_fade + 1, self.default_max_fade),
+            ui_manager,
+            container,
+            anchors={"top": "top", "top_target": self.max_fade_label},
         )
 
         self.min_size_label = UILabel(
@@ -205,14 +228,13 @@ class UI:
             "Min Size:",
             ui_manager,
             container,
-            anchors={"top": "top", "top_target": self.lifetime_slider},
+            anchors={"top": "top", "top_target": self.max_fade_slider},
             object_id=ObjectID(class_id="@setting_indicator"),
         )
-
         self.min_size_slider = UIHorizontalSlider(
             pygame.Rect((self.start_x, self.spacing), (235, 25)),
             1,
-            (1, self.max_size - 1),
+            (1, self.default_max_size - 1),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.min_size_label},
@@ -230,7 +252,7 @@ class UI:
         self.max_size_slider = UIHorizontalSlider(
             pygame.Rect((self.start_x, self.spacing), (235, 25)),
             10,
-            (2, self.max_size),
+            (2, self.default_max_size),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.max_size_label},
@@ -248,7 +270,7 @@ class UI:
         self.min_speed_slider = UIHorizontalSlider(
             pygame.Rect((self.start_x, self.spacing), (235, 25)),
             1,
-            (1, self.max_speed - 1),
+            (1, self.default_max_speed - 1),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.min_speed_label},
@@ -266,7 +288,7 @@ class UI:
         self.max_speed_slider = UIHorizontalSlider(
             pygame.Rect((self.start_x, self.spacing), (235, 25)),
             20,
-            (2, self.max_speed),
+            (2, self.default_max_speed),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.max_speed_label},

@@ -1,4 +1,9 @@
 {
+  "@button": {
+    "misc": {
+      "shape": "rounded_rectangle"
+    }
+  },
   "@particle_button": {
     "misc": {
       "shape": "rounded_rectangle"

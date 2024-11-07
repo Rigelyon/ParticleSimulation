@@ -31,6 +31,7 @@ class Game:
 
         self.get_amount = len(self.particles.groups)
         self.get_fps = round(self.clock.get_fps(), 2)
+        self.get_color = self.ui.current_color
         self.get_multiplier = self.ui.multiplier_slider.get_current_value()
         self.get_min_fade = self.ui.min_fade_slider.get_current_value()
         self.get_max_fade = self.ui.max_fade_slider.get_current_value()
@@ -88,7 +89,7 @@ class Game:
             self.particles.spawn_particle(
                 "snow",
                 self.get_multiplier,
-                BASE_COLOR,
+                self.get_color,
                 self.get_min_speed,
                 self.get_max_speed,
                 self.get_min_size,

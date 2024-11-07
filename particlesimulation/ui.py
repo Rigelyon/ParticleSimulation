@@ -7,6 +7,7 @@ from pygame_gui.elements import (
     UIScrollingContainer,
 )
 from pygame_gui.core import ObjectID
+from pygame_gui.windows import UIColourPickerDialog
 
 from particlesimulation.constants import *
 
@@ -21,6 +22,7 @@ class UI:
         self.start_x = 0
         self.start_y = 0
         self.size_x, self.size_y = PARTICLE_BT_SIZE
+        self.current_color = pygame.Color(BASE_COLOR)
         self.default_min_fade = 100
         self.default_max_fade = 800
         self.default_max_size = 200
@@ -30,13 +32,9 @@ class UI:
         self.draw_components(ui_manager, self.scroll_container)
 
         # TODO:
-        #   - Color picker
         #   - Play button
         #   - Pause button
         #   - Clear button
-        #   - Apple button
-        #   - Use dropdown instead of buttons(?)
-        #   - Try to use horizontal scroll container
 
     def enforce_slider_limit(self):
         min_fade = self.min_fade_slider.get_current_value()
@@ -60,6 +58,15 @@ class UI:
             self.min_fade_slider.set_current_value(max_fade - 1)
         if max_fade < min_fade:
             self.max_fade_slider.set_current_value(min_fade + 1)
+
+    def draw_color_picker_dialog(self, ui_manager):
+        self.color_picker = UIColourPickerDialog(
+            pygame.Rect((WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4), (500, 300)),
+            ui_manager,
+            initial_colour=pygame.Color(BASE_COLOR),
+            window_title="Choose Color",
+        )
+        self.current_color = self.color_picker.get_colour()
 
     def draw_container(self, ui_manager):
         self.scroll_container = UIScrollingContainer(
@@ -172,12 +179,25 @@ class UI:
             object_id=ObjectID(class_id="@particle_button"),
         )
 
+        self.chose_color_bt = UIButton(
+            pygame.Rect(
+                (self.start_x, self.separator_spacing),
+                (PARTICLE_BT_SIZE[0] * 2 + self.bt_spacing, 35),
+            ),
+            "Choose Color",
+            ui_manager,
+            container,
+            command=lambda: self.draw_color_picker_dialog(ui_manager),
+            anchors={"top": "top", "top_target": self.firefly_bt},
+            object_id=ObjectID(class_id="@button"),
+        )
+
         self.multiplier_label = UILabel(
             pygame.Rect((self.start_x, self.separator_spacing), (200, 20)),
             "Multiplier:",
             ui_manager,
             container,
-            anchors={"top": "top", "top_target": self.firefly_bt},
+            anchors={"top": "top", "top_target": self.chose_color_bt},
             object_id=ObjectID(class_id="@setting_indicator"),
         )
         self.multiplier_slider = UIHorizontalSlider(

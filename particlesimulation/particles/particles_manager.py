@@ -104,7 +104,6 @@ class ParticlesManager:
             speed = randint(min_speed, max_speed)
             size = randint(min_size, max_size)
             fade_speed = randint(min_fade, max_fade)
-            print(fade_speed)
             Particle(
                 groups=self.groups,
                 pos=pos,

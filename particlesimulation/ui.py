@@ -4,6 +4,7 @@ from pygame_gui.elements import (
     UIHorizontalSlider,
     UILabel,
     UIButton,
+    UIScrollingContainer,
 )
 from pygame_gui.core import ObjectID
 
@@ -17,13 +18,14 @@ class UI:
         self.spacing = 2
         self.bt_spacing = 5
         self.separator_spacing = 15
-        self.start_x = SCREENX_RIGHT + SCREEN_SPACING
-        self.start_y = SCREENY_TOP
+        self.start_x = 0
+        self.start_y = 0
         self.size_x, self.size_y = PARTICLE_BT_SIZE
         self.max_size = 200
         self.max_speed = 500
 
-        self.draw_components(ui_manager)
+        self.draw_container(ui_manager)
+        self.draw_components(ui_manager, self.scroll_container)
 
         # TODO:
         #   - Color picker
@@ -50,7 +52,16 @@ class UI:
         if max_speed < min_speed:
             self.max_speed_slider.set_current_value(min_speed + 1)
 
-    def draw_components(self, ui_manager):
+    def draw_container(self, ui_manager):
+        self.scroll_container = UIScrollingContainer(
+            pygame.Rect(
+                (SCREENX_RIGHT + SCREEN_SPACING, SCREENY_TOP), (265, SCREEN_HEIGHT)
+            ),
+            manager=ui_manager,
+            allow_scroll_x=False,
+        )
+
+    def draw_components(self, ui_manager, container):
         self.particle_count_label = UILabel(
             pygame.Rect((SCREENX_LEFT, SCREENY_BOTTOM + SCREEN_SPACING), (300, 20)),
             "Particle(s) count:",
@@ -79,12 +90,14 @@ class UI:
             pygame.Rect((self.start_x, self.start_y), PARTICLE_BT_SIZE),
             "Circle",
             ui_manager,
+            container,
             object_id=ObjectID(class_id="@particle_button"),
         )
         self.snow_bt = UIButton(
             pygame.Rect((self.bt_spacing, self.start_y), PARTICLE_BT_SIZE),
             "Snow",
             ui_manager,
+            container,
             anchors={"left": "left", "left_target": self.circle_bt},
             object_id=ObjectID(class_id="@particle_button"),
         )
@@ -92,6 +105,7 @@ class UI:
             pygame.Rect((self.bt_spacing, self.start_y), PARTICLE_BT_SIZE),
             "Leaves",
             ui_manager,
+            container,
             anchors={"left": "left", "left_target": self.snow_bt},
             object_id=ObjectID(class_id="@particle_button"),
         )
@@ -99,6 +113,7 @@ class UI:
             pygame.Rect((self.bt_spacing, self.start_y), PARTICLE_BT_SIZE),
             "Meteor",
             ui_manager,
+            container,
             anchors={"left": "left", "left_target": self.leaves_bt},
             object_id=ObjectID(class_id="@particle_button"),
         )
@@ -106,6 +121,7 @@ class UI:
             pygame.Rect((self.start_x, self.bt_spacing), PARTICLE_BT_SIZE),
             "Firefly",
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.circle_bt},
             object_id=ObjectID(class_id="@particle_button"),
         )
@@ -113,6 +129,7 @@ class UI:
             pygame.Rect((self.bt_spacing, self.bt_spacing), PARTICLE_BT_SIZE),
             "Rain",
             ui_manager,
+            container,
             anchors={
                 "top": "top",
                 "left": "left",
@@ -125,6 +142,7 @@ class UI:
             pygame.Rect((self.bt_spacing, self.bt_spacing), PARTICLE_BT_SIZE),
             "Sakura",
             ui_manager,
+            container,
             anchors={
                 "top": "top",
                 "left": "left",
@@ -137,6 +155,7 @@ class UI:
             pygame.Rect((self.bt_spacing, self.bt_spacing), PARTICLE_BT_SIZE),
             "Stars",
             ui_manager,
+            container,
             anchors={
                 "top": "top",
                 "left": "left",
@@ -149,6 +168,7 @@ class UI:
             pygame.Rect((self.start_x, self.separator_spacing), (200, 20)),
             "Multiplier:",
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.firefly_bt},
             object_id=ObjectID(class_id="@setting_indicator"),
         )
@@ -158,6 +178,7 @@ class UI:
             1,
             (1, 100),
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.multiplier_label},
         )
 
@@ -165,6 +186,7 @@ class UI:
             pygame.Rect((self.start_x, self.spacing), (200, 20)),
             "Lifetime:",
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.multiplier_slider},
             object_id=ObjectID(class_id="@setting_indicator"),
         )
@@ -174,6 +196,7 @@ class UI:
             1,
             (1, 100),
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.lifetime_label},
         )
 
@@ -181,6 +204,7 @@ class UI:
             pygame.Rect((self.start_x, self.separator_spacing), (200, 20)),
             "Min Size:",
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.lifetime_slider},
             object_id=ObjectID(class_id="@setting_indicator"),
         )
@@ -190,6 +214,7 @@ class UI:
             1,
             (1, self.max_size - 1),
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.min_size_label},
         )
 
@@ -197,6 +222,7 @@ class UI:
             pygame.Rect((self.start_x, self.spacing), (200, 20)),
             "Max Size:",
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.min_size_slider},
             object_id=ObjectID(class_id="@setting_indicator"),
         )
@@ -206,6 +232,7 @@ class UI:
             10,
             (2, self.max_size),
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.max_size_label},
         )
 
@@ -213,6 +240,7 @@ class UI:
             pygame.Rect((self.start_x, self.separator_spacing), (200, 20)),
             "Min Speed:",
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.max_size_slider},
             object_id=ObjectID(class_id="@setting_indicator"),
         )
@@ -222,6 +250,7 @@ class UI:
             1,
             (1, self.max_speed - 1),
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.min_speed_label},
         )
 
@@ -229,6 +258,7 @@ class UI:
             pygame.Rect((self.start_x, self.spacing), (200, 20)),
             "Max Speed:",
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.min_speed_slider},
             object_id=ObjectID(class_id="@setting_indicator"),
         )
@@ -238,6 +268,7 @@ class UI:
             20,
             (2, self.max_speed),
             ui_manager,
+            container,
             anchors={"top": "top", "top_target": self.max_speed_label},
         )
 

@@ -1,3 +1,4 @@
+import os
 import sys
 
 import pygame
@@ -17,9 +18,9 @@ class Game:
         self.is_running = True
         self.max_frame_rate = 60
 
-        self.ui_manager = UIManager(
-            (WINDOW_WIDTH, WINDOW_HEIGHT), "particlesimulation/styles/theme.json"
-        )
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        theme_path = os.path.join(script_dir, "styles", "theme.json")
+        self.ui_manager = UIManager((WINDOW_WIDTH, WINDOW_HEIGHT), theme_path)
 
         self.particles = ParticlesManager()
         self.ui = UI(self.ui_manager)

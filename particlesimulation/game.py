@@ -16,7 +16,8 @@ class Game:
         pygame.display.set_caption(GAME_TITLE)
         self.clock = pygame.time.Clock()
         self.is_running = True
-        self.max_frame_rate = 60
+        self.is_paused = False  # TODO: Implement paused state
+        self.max_frame_rate = 120
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
         theme_path = os.path.join(script_dir, "styles", "theme.json")
@@ -31,6 +32,7 @@ class Game:
 
         self.get_amount = len(self.particles.groups)
         self.get_fps = round(self.clock.get_fps(), 2)
+        self.get_types = self.ui.current_type
         self.get_color = self.ui.current_color
         self.get_multiplier = self.ui.multiplier_slider.get_current_value()
         self.get_min_fade = self.ui.min_fade_slider.get_current_value()
@@ -87,7 +89,7 @@ class Game:
 
             # TODO: Switching particles
             self.particles.spawn_particle(
-                "snow",
+                self.get_types,
                 self.get_multiplier,
                 self.get_color,
                 self.get_min_speed,

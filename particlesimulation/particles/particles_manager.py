@@ -23,7 +23,7 @@ class ParticlesManager:
         max_fade: int,
     ):
         match types:
-            case "normal":
+            case "circle":
                 self.draw_particle(
                     multiplier,
                     color,

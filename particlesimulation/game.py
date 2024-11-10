@@ -1,12 +1,14 @@
 import os
 import sys
+from random import sample, choice
 
 import pygame
 from pygame_gui import UIManager
 
-from particlesimulation.ui import UI
-from particlesimulation.particles.particles_manager import ParticlesManager
 from particlesimulation.constants import *
+from particlesimulation.particles_manager import ParticlesManager
+from particlesimulation.ui import UI
+from particlesimulation.video_manager import VideoManager
 
 
 class Game:
@@ -17,12 +19,14 @@ class Game:
         self.clock = pygame.time.Clock()
         self.is_running = True
         self.is_paused = False  # TODO: Implement paused state
+        self.is_video_running = False
         self.max_frame_rate = 120
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
         theme_path = os.path.join(script_dir, "styles", "theme.json")
         self.ui_manager = UIManager((WINDOW_WIDTH, WINDOW_HEIGHT), theme_path)
 
+        self.video_manager = VideoManager()
         self.particles = ParticlesManager()
         self.ui = UI(self.ui_manager)
 
@@ -30,6 +34,7 @@ class Game:
         self.window.fill(self.ui_manager.ui_theme.get_colour("dark_bg"))
         self.dt = self.clock.tick(self.max_frame_rate) / 1000
 
+        self.get_frames_count = self.video_manager.frame_count
         self.get_amount = len(self.particles.groups)
         self.get_fps = round(self.clock.get_fps(), 2)
         self.get_types = self.ui.current_type
@@ -45,6 +50,7 @@ class Game:
         self.ui.draw_screen()
         self.ui.particle_count_label.set_text(f"Particle(s) amount: {self.get_amount}")
         self.ui.fps_label.set_text(f"FPS: {self.get_fps}")
+        self.ui.frame_label.set_text(f"Frame: 0/{self.get_frames_count}")
 
         self.ui.multiplier_label.set_text(f"Multiplier: {self.get_multiplier}")
         self.ui.min_fade_label.set_text(f"Min Fade Speed: {self.get_min_fade}")
@@ -75,6 +81,15 @@ class Game:
                 self.quit()
             if event.type == pygame.USEREVENT:
                 self.ui.enforce_slider_limit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_l:
+                    # TODO: Create progress bar for loading the frames
+                    self.video_manager.delete_existing_frames()
+                    self.video_manager.make_dir()
+                    self.video_manager.process_frames()
+                    self.video_manager.process_coords()
+                if event.key == pygame.K_p:
+                    self.is_video_running = True
 
             self.ui_manager.process_events(event)
 
@@ -87,15 +102,40 @@ class Game:
             self.handle_events()
             self.update()
 
-            # TODO: Switching particles
-            self.particles.spawn_particle(
-                self.get_types,
-                self.get_multiplier,
-                self.get_color,
-                self.get_min_speed,
-                self.get_max_speed,
-                self.get_min_size,
-                self.get_max_size,
-                self.get_min_fade,
-                self.get_max_fade,
-            )
+            if self.is_video_running:
+                frame_number = 0
+                dark_pixels = self.video_manager.load_coords(frame_number)
+                for x, y in sample(dark_pixels, 50):
+                    scaled_x = int(x * SCALE_VIDEO_WIDTH)
+                    scaled_y = int(y * SCALE_VIDEO_HEIGHT)
+                    self.particles.spawn_particle(
+                        self.get_types,
+                        self.get_multiplier,
+                        self.get_color,
+                        self.get_min_speed,
+                        self.get_max_speed,
+                        self.get_min_size,
+                        self.get_max_size,
+                        self.get_min_fade,
+                        self.get_max_fade,
+                        True,
+                        (scaled_x, scaled_y),
+                    )
+                    frame_number += 1
+                    if frame_number >= self.get_frames_count:
+                        y = 0
+                        x = 0
+                    print(f"{scaled_x}, {scaled_y}")
+            else:
+                # TODO: Switching particles
+                self.particles.spawn_particle(
+                    self.get_types,
+                    self.get_multiplier,
+                    self.get_color,
+                    self.get_min_speed,
+                    self.get_max_speed,
+                    self.get_min_size,
+                    self.get_max_size,
+                    self.get_min_fade,
+                    self.get_max_fade,
+                )

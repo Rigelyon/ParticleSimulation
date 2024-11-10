@@ -2,3 +2,7 @@ pygame==2.6.1
 pygame-ce==2.5.2
 pygame_gui==0.6.12
 python-i18n==0.3.9
+
+opencv-python~=4.10.0.84
+pillow~=11.0.0
+numpy~=2.1.3

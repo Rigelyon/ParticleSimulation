@@ -32,13 +32,7 @@ class UI:
         self.draw_container(ui_manager)
         self.draw_components(ui_manager, self.scroll_container)
 
-        # TODO:
-        #   - Play button
-        #   - Pause button
-        #   - Clear button
-
     def set_particle_types(self, types):
-        # TODO: Define default value for each types
         match types:
             case "circle":
                 self.current_type = "circle"
@@ -96,7 +90,7 @@ class UI:
         if max_fade < min_fade:
             self.max_fade_slider.set_current_value(min_fade + 1)
 
-    def enforce_value_video_mode(self):
+    def video_mode_enabled(self):
         self.multiplier_slider.set_current_value(1)
         self.multiplier_slider.disable()
         self.min_fade_slider.set_current_value(self.default_max_fade - 1)
@@ -104,6 +98,11 @@ class UI:
         self.max_fade_slider.set_current_value(self.default_max_fade)
         self.max_fade_slider.disable()
         self.max_size_slider.set_current_value(6)
+
+    def video_mode_disabled(self):
+        self.multiplier_slider.enable()
+        self.min_fade_slider.enable()
+        self.max_fade_slider.enable()
 
     def draw_color_picker_dialog(self, ui_manager):
         self.color_picker = UIColourPickerDialog(

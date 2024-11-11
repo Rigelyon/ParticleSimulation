@@ -1,7 +1,7 @@
 import os
+import random
 import sys
 import time
-from random import sample
 
 import pygame
 from pygame_gui import UIManager
@@ -89,8 +89,10 @@ class Game:
                 self.ui.enforce_slider_limit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_l:
-                    # TODO: Create progress bar for loading the frames
-                    self.video_manager.delete_existing_frames()
+                    # Delete existing file
+                    self.video_manager.delete_frames()
+                    self.video_manager.delete_coords()
+
                     self.video_manager.make_dir()
                     self.video_manager.video_to_images()
                     self.video_manager.save_coords()
@@ -98,12 +100,11 @@ class Game:
                     self.is_video_running = not self.is_video_running
                     if self.is_video_running:
                         self.video_manager.music.play()
-                        self.ui.enforce_value_video_mode()
+                        self.ui.video_mode_enabled()
                     elif not self.is_video_running:
+                        self.current_frame = 0
                         self.video_manager.music.stop()
-                if event.key == pygame.K_r:
-                    self.current_frame = 0
-
+                        self.ui.video_mode_disabled()
             self.ui_manager.process_events(event)
 
     def quit(self):
@@ -119,15 +120,29 @@ class Game:
             self.handle_events()
             self.update()
 
-            file_name = f"ba-{str(self.current_frame).zfill(4)}.json"
             if self.is_video_running and self.current_frame < self.get_frames_count:
-                dark_pixels = self.video_manager.load_coords(self.current_frame)
-
-                if len(dark_pixels) > 300:
-                    for y, x in sample(dark_pixels, 300):
-                        scaled_x = int(x * SCALE_VIDEO_WIDTH + 1)
-                        scaled_y = int(y * SCALE_VIDEO_HEIGHT + 1)
-                        self.particles.spawn_particle(
+                dark_pixels = self.video_manager.load_coords(
+                    self.current_frame
+                ).tolist()
+                dark_pixels_threshold = [
+                    450,
+                    400,
+                    350,
+                    300,
+                    250,
+                    200,
+                    150,
+                    100,
+                    50,
+                    40,
+                    30,
+                    20,
+                    10,
+                    5,
+                ]
+                for threshold in dark_pixels_threshold:
+                    if len(dark_pixels) > threshold:
+                        self.particles.spawn_particles_video_mode(
                             self.get_types,
                             self.get_multiplier,
                             self.get_color,
@@ -137,20 +152,25 @@ class Game:
                             self.get_max_size,
                             self.get_min_fade,
                             self.get_max_fade,
-                            True,
-                            (scaled_x, scaled_y),
+                            threshold,
+                            dark_pixels,
                         )
-                    self.current_frame += 1
-                    print(f"Load {file_name} frame number: {self.current_frame-1}")
+                        self.current_frame += 1
+                        break
                 else:
                     self.current_frame += 1
-                    print(f"Load {file_name} frame number: {self.current_frame-1}")
 
                 elapsed = time.time() - start_time
                 if elapsed < target_frame_duration:
                     time.sleep(target_frame_duration - elapsed)
+
+            elif self.current_frame >= self.get_frames_count:
+                self.is_video_running = False
+                self.video_manager.music.stop()
+                self.ui.video_mode_disabled()
+                self.current_frame = 0
+
             else:
-                # TODO: Switching particles
                 self.particles.spawn_particle(
                     self.get_types,
                     self.get_multiplier,

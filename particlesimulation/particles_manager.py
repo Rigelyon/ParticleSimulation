@@ -1,9 +1,10 @@
+import random
 from random import randint
 
 import pygame
 
-from particlesimulation.particle import Particle
 from particlesimulation.constants import *
+from particlesimulation.particle import Particle
 
 
 class ParticlesManager:
@@ -51,6 +52,38 @@ class ParticlesManager:
                     is_video,
                     pixel_pos,
                 )
+
+    def spawn_particles_video_mode(
+        self,
+        types: str,
+        multiplier: int,
+        color: int,
+        min_speed: int,
+        max_speed: int,
+        min_size: int,
+        max_size: int,
+        min_fade: int,
+        max_fade: int,
+        pixel_count: int,
+        dark_pixels: [[int, int]],
+    ):
+        sample_count = min(pixel_count, 450)
+        for y, x in random.sample(dark_pixels, sample_count):
+            scaled_x = int(x * SCALE_VIDEO_WIDTH + 1)
+            scaled_y = int(y * SCALE_VIDEO_HEIGHT + 1)
+            self.spawn_particle(
+                types,
+                multiplier,
+                color,
+                min_speed,
+                max_speed,
+                min_size,
+                max_size,
+                min_fade,
+                max_fade,
+                True,
+                (scaled_x, scaled_y),
+            )
 
     def kill_off_screen(self):
         for particle in self.groups:

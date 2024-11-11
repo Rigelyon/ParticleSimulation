@@ -96,6 +96,15 @@ class UI:
         if max_fade < min_fade:
             self.max_fade_slider.set_current_value(min_fade + 1)
 
+    def enforce_value_video_mode(self):
+        self.multiplier_slider.set_current_value(1)
+        self.multiplier_slider.disable()
+        self.min_fade_slider.set_current_value(self.default_max_fade - 1)
+        self.min_fade_slider.disable()
+        self.max_fade_slider.set_current_value(self.default_max_fade)
+        self.max_fade_slider.disable()
+        self.max_size_slider.set_current_value(6)
+
     def draw_color_picker_dialog(self, ui_manager):
         self.color_picker = UIColourPickerDialog(
             pygame.Rect((WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4), (500, 300)),
@@ -137,20 +146,20 @@ class UI:
             object_id=ObjectID(class_id="#fps_counter"),
         )
 
-        self.pause_bt = UIButton(
-            pygame.Rect(
-                (SCREEN_WIDTH / 2 + SCREEN_MARGIN, 10),
-                (PARTICLE_BT_SIZE[0] * 2 + self.bt_spacing, 35),
-            ),
-            "Pause",
-            anchors={
-                "top": "top",
-                "left": "left",
-                "right": "right",
-                "top_target": self.scroll_container,
-            },
-            object_id=ObjectID(class_id="@button"),
-        )
+        # self.pause_bt = UIButton(
+        #     pygame.Rect(
+        #         (SCREEN_WIDTH / 2 + SCREEN_MARGIN, 10),
+        #         (PARTICLE_BT_SIZE[0] * 2 + self.bt_spacing, 35),
+        #     ),
+        #     "Pause",
+        #     anchors={
+        #         "top": "top",
+        #         "left": "left",
+        #         "right": "right",
+        #         "top_target": self.scroll_container,
+        #     },
+        #     object_id=ObjectID(class_id="@button"),
+        # )
 
         self.circle_bt = UIButton(
             pygame.Rect((self.start_x, self.start_y), PARTICLE_BT_SIZE),

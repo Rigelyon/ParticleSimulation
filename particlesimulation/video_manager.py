@@ -2,7 +2,7 @@ import json
 import os
 
 import cv2
-import numpy as np
+import pygame
 from PIL import Image
 
 from particlesimulation.constants import (
@@ -16,17 +16,35 @@ class VideoManager:
         self.script_dir = os.path.dirname(os.path.abspath(__file__))
         self.images_dir = os.path.join(self.script_dir, "assets", "frames")
         self.coordinates_dir = os.path.join(self.script_dir, "coordinates")
-        video_path = os.path.join(self.script_dir, "assets", "video.mp4")
-        self.cap = cv2.VideoCapture(video_path)
+        self.video_path = os.path.join(self.script_dir, "assets", "video.mp4")
+        self.audio_path = os.path.join(self.script_dir, "assets", "audio.ogg")
+        self.cap = cv2.VideoCapture(self.video_path)
+
+        pygame.mixer.init()
+        self.music = pygame.mixer.music
+        self.music.load(self.audio_path)
 
         self.frame_count = 0
+        self.files_count = len(
+            [
+                name
+                for name in os.listdir(self.images_dir)
+                if os.path.isfile(os.path.join(self.images_dir, name))
+            ]
+        )
 
     def _get_coords(self, image_path):
-        image = Image.open(image_path)
-        np_image = np.array(image)
-        dark_pixels = np.argwhere(np_image < 50)
+        image = Image.open(image_path).convert("L")
+        pixels = image.load()
 
-        return dark_pixels.tolist()
+        dark_pixels = [
+            (y, x)
+            for y in range(image.height)
+            for x in range(image.width)
+            if pixels[x, y] > 100
+        ]
+
+        return dark_pixels
 
     def load_coords(self, frame_number):
         file_name = "ba-" + str(frame_number).zfill(4) + ".json"
@@ -52,7 +70,7 @@ class VideoManager:
         elif not os.path.exists(self.coordinates_dir):
             os.makedirs(self.coordinates_dir)
 
-    def process_coords(self):
+    def save_coords(self):
         for frame_count in range(self.frame_count - 1):
             file_name = "ba-" + str(frame_count).zfill(4) + ".jpg"
             file_path = os.path.join(self.images_dir, file_name)
@@ -69,7 +87,7 @@ class VideoManager:
             else:
                 print(f"File {file_name} doesn't exist")
 
-    def process_frames(self):
+    def video_to_images(self):
         while self.cap.isOpened():
             ret, frame = self.cap.read()
             if not ret:

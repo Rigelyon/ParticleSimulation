@@ -1,6 +1,7 @@
 import os
 import sys
-from random import sample, choice
+import time
+from random import sample
 
 import pygame
 from pygame_gui import UIManager
@@ -18,9 +19,10 @@ class Game:
         pygame.display.set_caption(GAME_TITLE)
         self.clock = pygame.time.Clock()
         self.is_running = True
-        self.is_paused = False  # TODO: Implement paused state
+        self.is_paused = False
         self.is_video_running = False
         self.max_frame_rate = 120
+        self.current_frame = 0
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
         theme_path = os.path.join(script_dir, "styles", "theme.json")
@@ -30,11 +32,13 @@ class Game:
         self.particles = ParticlesManager()
         self.ui = UI(self.ui_manager)
 
+        self.last_frame_time = pygame.time.get_ticks()
+
     def update(self):
         self.window.fill(self.ui_manager.ui_theme.get_colour("dark_bg"))
         self.dt = self.clock.tick(self.max_frame_rate) / 1000
 
-        self.get_frames_count = self.video_manager.frame_count
+        self.get_frames_count = self.video_manager.files_count
         self.get_amount = len(self.particles.groups)
         self.get_fps = round(self.clock.get_fps(), 2)
         self.get_types = self.ui.current_type
@@ -50,7 +54,9 @@ class Game:
         self.ui.draw_screen()
         self.ui.particle_count_label.set_text(f"Particle(s) amount: {self.get_amount}")
         self.ui.fps_label.set_text(f"FPS: {self.get_fps}")
-        self.ui.frame_label.set_text(f"Frame: 0/{self.get_frames_count}")
+        self.ui.frame_label.set_text(
+            f"Frame: {self.current_frame}/{self.get_frames_count}"
+        )
 
         self.ui.multiplier_label.set_text(f"Multiplier: {self.get_multiplier}")
         self.ui.min_fade_label.set_text(f"Min Fade Speed: {self.get_min_fade}")
@@ -86,10 +92,17 @@ class Game:
                     # TODO: Create progress bar for loading the frames
                     self.video_manager.delete_existing_frames()
                     self.video_manager.make_dir()
-                    self.video_manager.process_frames()
-                    self.video_manager.process_coords()
+                    self.video_manager.video_to_images()
+                    self.video_manager.save_coords()
                 if event.key == pygame.K_p:
-                    self.is_video_running = True
+                    self.is_video_running = not self.is_video_running
+                    if self.is_video_running:
+                        self.video_manager.music.play()
+                        self.ui.enforce_value_video_mode()
+                    elif not self.is_video_running:
+                        self.video_manager.music.stop()
+                if event.key == pygame.K_r:
+                    self.current_frame = 0
 
             self.ui_manager.process_events(event)
 
@@ -98,34 +111,44 @@ class Game:
         sys.exit()
 
     def loop(self):
+        self.current_frame = 0
+        target_frame_duration = 1 / 30
+
         while self.is_running:
+            start_time = time.time()
             self.handle_events()
             self.update()
 
-            if self.is_video_running:
-                frame_number = 0
-                dark_pixels = self.video_manager.load_coords(frame_number)
-                for x, y in sample(dark_pixels, 50):
-                    scaled_x = int(x * SCALE_VIDEO_WIDTH)
-                    scaled_y = int(y * SCALE_VIDEO_HEIGHT)
-                    self.particles.spawn_particle(
-                        self.get_types,
-                        self.get_multiplier,
-                        self.get_color,
-                        self.get_min_speed,
-                        self.get_max_speed,
-                        self.get_min_size,
-                        self.get_max_size,
-                        self.get_min_fade,
-                        self.get_max_fade,
-                        True,
-                        (scaled_x, scaled_y),
-                    )
-                    frame_number += 1
-                    if frame_number >= self.get_frames_count:
-                        y = 0
-                        x = 0
-                    print(f"{scaled_x}, {scaled_y}")
+            file_name = f"ba-{str(self.current_frame).zfill(4)}.json"
+            if self.is_video_running and self.current_frame < self.get_frames_count:
+                dark_pixels = self.video_manager.load_coords(self.current_frame)
+
+                if len(dark_pixels) > 300:
+                    for y, x in sample(dark_pixels, 300):
+                        scaled_x = int(x * SCALE_VIDEO_WIDTH + 1)
+                        scaled_y = int(y * SCALE_VIDEO_HEIGHT + 1)
+                        self.particles.spawn_particle(
+                            self.get_types,
+                            self.get_multiplier,
+                            self.get_color,
+                            self.get_min_speed,
+                            self.get_max_speed,
+                            self.get_min_size,
+                            self.get_max_size,
+                            self.get_min_fade,
+                            self.get_max_fade,
+                            True,
+                            (scaled_x, scaled_y),
+                        )
+                    self.current_frame += 1
+                    print(f"Load {file_name} frame number: {self.current_frame-1}")
+                else:
+                    self.current_frame += 1
+                    print(f"Load {file_name} frame number: {self.current_frame-1}")
+
+                elapsed = time.time() - start_time
+                if elapsed < target_frame_duration:
+                    time.sleep(target_frame_duration - elapsed)
             else:
                 # TODO: Switching particles
                 self.particles.spawn_particle(

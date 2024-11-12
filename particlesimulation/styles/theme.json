@@ -14,6 +14,21 @@
       "text_horiz_alignment": "left"
     }
   },
+  "@loading_text": {
+    "misc": {
+      "text_vert_alignment": "top",
+      "text_horiz_alignment": "center"
+    },
+    "font": {
+      "size": 18
+    }
+  },
+  "@alert_text": {
+    "misc": {
+      "text_vert_alignment": "top",
+      "text_horiz_alignment": "left"
+    }
+  },
   "@debug_text": {
     "misc": {
       "text_horiz_alignment": "left"

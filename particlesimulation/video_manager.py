@@ -9,6 +9,7 @@ from particlesimulation.constants import (
     VIDEO_WIDTH,
     VIDEO_HEIGHT,
 )
+from particlesimulation.dataclass import UIFlag, GameFlag
 
 
 class VideoManager:
@@ -18,7 +19,8 @@ class VideoManager:
         self.coords_dir = os.path.join(self.this_dir, "coordinates")
         self.video_path = os.path.join(self.this_dir, "assets", "video.mp4")
         self.audio_path = os.path.join(self.this_dir, "assets", "audio.ogg")
-        self.cap = cv2.VideoCapture(self.video_path)
+
+        self.init_capture()
 
         pygame.mixer.init()
         self.music = pygame.mixer.music
@@ -41,9 +43,17 @@ class VideoManager:
             (y, x)
             for y in range(image.height)
             for x in range(image.width)
-            if 50 < pixels[x, y] < 200
+            if pixels[x, y] > 50  # White pixels on mode
+            # if pixels[x, y] < 50 # Black pixels on mode
+            # if 50 < pixels[x, y] < 200 # Outline mode
         ]
         return dark_pixels
+
+    def init_capture(self):
+        self.cap = cv2.VideoCapture(self.video_path)
+        self.get_fps = self.cap.get(cv2.CAP_PROP_FPS)
+
+    # def calculate_total_progress(self):
 
     def load_coords(self, frame_number):
         coords_file_name = "ba-" + str(frame_number).zfill(4) + ".npy"
@@ -113,3 +123,33 @@ class VideoManager:
             self.frame_count += 1
 
         self.cap.release()
+
+    def play_mini_player(self):
+        while True:
+            ret, frame = self.cap.read()
+            if not ret:
+                break
+
+            resized_frame = cv2.resize(
+                frame,
+                (
+                    round(UIFlag.mini_player_width),
+                    round(UIFlag.mini_player_height),
+                ),
+            )
+            video_surf = pygame.image.frombuffer(
+                resized_frame.tobytes(), resized_frame.shape[1::-1], "BGR"
+            )
+            return video_surf
+
+        self.cap.release()
+
+    def loading_operation(self):
+        # Delete existing file
+        self.delete_frames()
+        self.delete_coords()
+
+        GameFlag.video_loading_progress = 0
+        self.make_dir()
+        self.video_to_images()
+        self.save_coords()

@@ -1,12 +1,13 @@
 import os
-import random
 import sys
-import time
+import threading
 
+import cv2
 import pygame
 from pygame_gui import UIManager
 
 from particlesimulation.constants import *
+from particlesimulation.dataclass import GameFlag, UIFlag
 from particlesimulation.particles_manager import ParticlesManager
 from particlesimulation.ui import UI
 from particlesimulation.video_manager import VideoManager
@@ -18,11 +19,6 @@ class Game:
         self.window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption(GAME_TITLE)
         self.clock = pygame.time.Clock()
-        self.is_running = True
-        self.is_paused = False
-        self.is_video_running = False
-        self.max_frame_rate = 120
-        self.current_frame = 0
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
         theme_path = os.path.join(script_dir, "styles", "theme.json")
@@ -32,17 +28,21 @@ class Game:
         self.particles = ParticlesManager()
         self.ui = UI(self.ui_manager)
 
-        self.last_frame_time = pygame.time.get_ticks()
-
     def update(self):
         self.window.fill(self.ui_manager.ui_theme.get_colour("dark_bg"))
-        self.dt = self.clock.tick(self.max_frame_rate) / 1000
+        if GameFlag.is_video_running:
+            GameFlag.max_frame_rate = self.video_manager.get_fps
+            self.ui.draw_mini_player(self.window, self.video_manager.play_mini_player())
+        else:
+            GameFlag.max_frame_rate = 120
+
+        self.dt = self.clock.tick(GameFlag.max_frame_rate) / 1000
 
         self.get_frames_count = self.video_manager.files_count
         self.get_amount = len(self.particles.groups)
         self.get_fps = round(self.clock.get_fps(), 2)
-        self.get_types = self.ui.current_type
-        self.get_color = self.ui.current_color
+        self.get_types = UIFlag.current_type
+        self.get_color = UIFlag.current_color
         self.get_multiplier = self.ui.multiplier_slider.get_current_value()
         self.get_min_fade = self.ui.min_fade_slider.get_current_value()
         self.get_max_fade = self.ui.max_fade_slider.get_current_value()
@@ -55,7 +55,7 @@ class Game:
         self.ui.particle_count_label.set_text(f"Particle(s) amount: {self.get_amount}")
         self.ui.fps_label.set_text(f"FPS: {self.get_fps}")
         self.ui.frame_label.set_text(
-            f"Frame: {self.current_frame}/{self.get_frames_count}"
+            f"Frame: {GameFlag.current_video_frame}/{self.get_frames_count}"
         )
 
         self.ui.multiplier_label.set_text(f"Multiplier: {self.get_multiplier}")
@@ -83,28 +83,30 @@ class Game:
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.is_running = False
+                GameFlag.is_running = False
                 self.quit()
             if event.type == pygame.USEREVENT:
                 self.ui.enforce_slider_limit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_l:
-                    # Delete existing file
-                    self.video_manager.delete_frames()
-                    self.video_manager.delete_coords()
+                if event.key == pygame.K_SPACE:
+                    if GameFlag.is_video_loaded:
+                        GameFlag.is_video_running = not GameFlag.is_video_running
+                        if GameFlag.is_video_running:
+                            self.video_manager.music.play()
+                            self.ui.ui_state_enabled_video()
+                            self.video_manager.init_capture()
+                        elif not GameFlag.is_video_running:
+                            GameFlag.current_video_frame = 0
+                            self.video_manager.music.stop()
+                            self.ui.ui_state_disabled_video()
+                            self.video_manager.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                        # thread = threading.Thread(
+                        #     target=self.video_manager.loading_operation
+                        # )
+                        # thread.start()
+                    else:
+                        self.ui.draw_dialog_window(self.ui_manager)
 
-                    self.video_manager.make_dir()
-                    self.video_manager.video_to_images()
-                    self.video_manager.save_coords()
-                if event.key == pygame.K_p:
-                    self.is_video_running = not self.is_video_running
-                    if self.is_video_running:
-                        self.video_manager.music.play()
-                        self.ui.video_mode_enabled()
-                    elif not self.is_video_running:
-                        self.current_frame = 0
-                        self.video_manager.music.stop()
-                        self.ui.video_mode_disabled()
             self.ui_manager.process_events(event)
 
     def quit(self):
@@ -112,17 +114,18 @@ class Game:
         sys.exit()
 
     def loop(self):
-        self.current_frame = 0
-        target_frame_duration = 1 / 30
+        GameFlag.current_video_frame = 0
 
-        while self.is_running:
-            start_time = time.time()
+        while GameFlag.is_running:
             self.handle_events()
             self.update()
 
-            if self.is_video_running and self.current_frame < self.get_frames_count:
+            if (
+                GameFlag.is_video_running
+                and GameFlag.current_video_frame < self.get_frames_count
+            ):
                 dark_pixels = self.video_manager.load_coords(
-                    self.current_frame
+                    GameFlag.current_video_frame
                 ).tolist()
                 dark_pixels_threshold = [
                     450,
@@ -155,20 +158,16 @@ class Game:
                             threshold,
                             dark_pixels,
                         )
-                        self.current_frame += 1
+                        GameFlag.current_video_frame += 1
                         break
                 else:
-                    self.current_frame += 1
+                    GameFlag.current_video_frame += 1
 
-                elapsed = time.time() - start_time
-                if elapsed < target_frame_duration:
-                    time.sleep(target_frame_duration - elapsed)
-
-            elif self.current_frame >= self.get_frames_count:
-                self.is_video_running = False
+            elif GameFlag.current_video_frame >= self.get_frames_count:
+                GameFlag.is_video_running = False
                 self.video_manager.music.stop()
-                self.ui.video_mode_disabled()
-                self.current_frame = 0
+                self.ui.ui_state_disabled_video()
+                GameFlag.current_video_frame = 0
 
             else:
                 self.particles.spawn_particle(

@@ -1,65 +1,53 @@
+import cv2
 import pygame
-from pygame import Event
 from pygame_gui.elements import (
     UIHorizontalSlider,
     UILabel,
     UIButton,
     UIScrollingContainer,
+    UIWindow,
+    UITextBox,
+    UIProgressBar,
+    UIStatusBar,
 )
 from pygame_gui.core import ObjectID
 from pygame_gui.windows import UIColourPickerDialog
 
 from particlesimulation.constants import *
+from particlesimulation.dataclass import UIFlag, GameFlag
 
 
 class UI:
     def __init__(self, ui_manager):
         self.font_normal = pygame.font.SysFont(None, 22)
 
-        self.spacing = 2
-        self.bt_spacing = 5
-        self.separator_spacing = 15
-        self.start_x = 0
-        self.start_y = 0
-        self.size_x, self.size_y = PARTICLE_BT_SIZE
-        self.current_type = "circle"
-        self.current_color = pygame.Color(BASE_COLOR)
-        self.default_min_fade = 100
-        self.default_max_fade = 800
-        self.default_max_size = 200
-        self.default_max_speed = 500
-
         self.draw_container(ui_manager)
         self.draw_components(ui_manager, self.scroll_container)
 
-        # TODO:
-        #   - Play button
-        #   - Pause button
-        #   - Clear button
-
     def set_particle_types(self, types):
-        # TODO: Define default value for each types
         match types:
             case "circle":
                 self.current_type = "circle"
                 self.current_color = pygame.Color(255, 255, 255)
-                self.multiplier_slider.set_current_value(1)
-                self.min_fade_slider.set_current_value(100)
-                self.max_fade_slider.set_current_value(200)
-                self.min_size_slider.set_current_value(1)
-                self.max_size_slider.set_current_value(15)
-                self.min_speed_slider.set_current_value(1)
-                self.max_speed_slider.set_current_value(2)
+                if not GameFlag.is_video_running:
+                    self.multiplier_slider.set_current_value(1)
+                    self.min_fade_slider.set_current_value(100)
+                    self.max_fade_slider.set_current_value(200)
+                    self.min_size_slider.set_current_value(1)
+                    self.max_size_slider.set_current_value(15)
+                    self.min_speed_slider.set_current_value(1)
+                    self.max_speed_slider.set_current_value(2)
             case "snow":
                 self.current_type = "snow"
                 self.current_color = pygame.Color(255, 255, 255)
-                self.multiplier_slider.set_current_value(1)
-                self.min_fade_slider.set_current_value(100)
-                self.max_fade_slider.set_current_value(101)
-                self.min_size_slider.set_current_value(1)
-                self.max_size_slider.set_current_value(10)
-                self.min_speed_slider.set_current_value(10)
-                self.max_speed_slider.set_current_value(30)
+                if not GameFlag.is_video_running:
+                    self.multiplier_slider.set_current_value(1)
+                    self.min_fade_slider.set_current_value(100)
+                    self.max_fade_slider.set_current_value(101)
+                    self.min_size_slider.set_current_value(1)
+                    self.max_size_slider.set_current_value(10)
+                    self.min_speed_slider.set_current_value(10)
+                    self.max_speed_slider.set_current_value(30)
             case "leaves":
                 self.current_type = "leaves"
             case "meteor":
@@ -96,6 +84,53 @@ class UI:
         if max_fade < min_fade:
             self.max_fade_slider.set_current_value(min_fade + 1)
 
+    def ui_state_enabled_video(self):
+        self.multiplier_slider.set_current_value(1)
+        self.multiplier_slider.disable()
+        self.min_fade_slider.set_current_value(UIFlag.default_max_fade - 1)
+        self.min_fade_slider.disable()
+        self.max_fade_slider.set_current_value(UIFlag.default_max_fade)
+        self.max_fade_slider.disable()
+        self.min_size_slider.set_current_value(1)
+        self.min_size_slider.disable()
+        self.max_size_slider.set_current_value(6)
+        self.max_size_slider.disable()
+        self.min_speed_slider.set_current_value(1)
+        self.min_speed_slider.disable()
+        self.max_speed_slider.set_current_value(2)
+        self.max_speed_slider.disable()
+        self.scroll_container.set_relative_position(
+            (
+                SCREENX_RIGHT + SCREEN_SPACING,
+                SCREENY_TOP + UIFlag.mini_player_height + UIFlag.separator_spacing,
+            )
+        )
+        self.scroll_container.set_dimensions(
+            (
+                265,
+                SCREEN_HEIGHT - (UIFlag.mini_player_height + UIFlag.separator_spacing),
+            )
+        )
+
+    def ui_state_disabled_video(self):
+        self.multiplier_slider.enable()
+        self.min_fade_slider.enable()
+        self.max_fade_slider.enable()
+        self.min_size_slider.enable()
+        self.max_size_slider.enable()
+        self.min_speed_slider.enable()
+        self.max_speed_slider.enable()
+        self.scroll_container.set_position(
+            (SCREENX_RIGHT + SCREEN_SPACING, SCREENY_TOP)
+        )
+        self.scroll_container.set_dimensions(
+            (
+                265,
+                SCREEN_HEIGHT,
+            ),
+            False,
+        )
+
     def draw_color_picker_dialog(self, ui_manager):
         self.color_picker = UIColourPickerDialog(
             pygame.Rect((WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4), (500, 300)),
@@ -114,6 +149,67 @@ class UI:
             allow_scroll_x=False,
         )
 
+    def percent(self):
+        return 0.8
+
+    def draw_loading_window(self, ui_manager):
+        self.dialog_window.kill()
+        self.loading_window = UIWindow(
+            pygame.Rect((WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4), (500, 200)),
+            ui_manager,
+            window_display_title="Loading Video!",
+        )
+        self.loading_label = UILabel(
+            pygame.Rect((500 / 2 - 200 / 2, 20), (200, 80)),
+            "Please wait..",
+            manager=ui_manager,
+            container=self.loading_window,
+            object_id=ObjectID(class_id="@loading_text"),
+        )
+        self.loading_bar = UIStatusBar(
+            pygame.Rect((10, 60), (480, 30)),
+            manager=ui_manager,
+            container=self.loading_window,
+            percent_method=self.percent,
+        )
+        self.loading_bar.bar_filled_colour = "blue"
+        self.cancel_bt = UIButton(
+            pygame.Rect((500 / 2 - 100 / 2, 20), (100, 40)),
+            "Cancel",
+            ui_manager,
+            container=self.loading_window,
+            command=self.loading_window.kill,
+            anchors={"top": "top", "top_target": self.loading_bar},
+        )
+
+    def draw_dialog_window(self, ui_manager):
+        self.dialog_window = UIWindow(
+            pygame.Rect((WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4), (500, 200)),
+            ui_manager,
+            window_display_title="Alert!",
+        )
+        self.alert_label = UITextBox(
+            "Pressing Space Bar will actually plays the video sequence, but you haven't load the video. Do you want to load the video now?",
+            pygame.Rect((10, 20), (480, 80)),
+            manager=ui_manager,
+            container=self.dialog_window,
+            anchors={
+                "top": "top",
+                "bottom": "bottom",
+                "left": "left",
+                "right": "right",
+            },
+            object_id=ObjectID(class_id="@alert_text"),
+        )
+        self.yes_bt = UIButton(
+            pygame.Rect((500 / 2 - 100 / 2, 10), (100, 40)),
+            "Yes",
+            ui_manager,
+            self.dialog_window,
+            command=lambda: self.draw_loading_window(ui_manager),
+            anchors={"top": "top", "top_target": self.alert_label},
+        )
+
     def draw_components(self, ui_manager, container):
         self.particle_count_label = UILabel(
             pygame.Rect((SCREENX_LEFT, SCREENY_BOTTOM + SCREEN_SPACING), (300, 20)),
@@ -122,7 +218,7 @@ class UI:
             object_id=ObjectID(class_id="@debug_text"),
         )
         self.frame_label = UILabel(
-            pygame.Rect((SCREENX_LEFT, self.spacing), (300, 20)),
+            pygame.Rect((SCREENX_LEFT, UIFlag.spacing), (300, 20)),
             "Frame: 0/0",
             ui_manager,
             anchors={"top": "top", "top_target": self.particle_count_label},
@@ -137,23 +233,8 @@ class UI:
             object_id=ObjectID(class_id="#fps_counter"),
         )
 
-        self.pause_bt = UIButton(
-            pygame.Rect(
-                (SCREEN_WIDTH / 2 + SCREEN_MARGIN, 10),
-                (PARTICLE_BT_SIZE[0] * 2 + self.bt_spacing, 35),
-            ),
-            "Pause",
-            anchors={
-                "top": "top",
-                "left": "left",
-                "right": "right",
-                "top_target": self.scroll_container,
-            },
-            object_id=ObjectID(class_id="@button"),
-        )
-
         self.circle_bt = UIButton(
-            pygame.Rect((self.start_x, self.start_y), PARTICLE_BT_SIZE),
+            pygame.Rect((UIFlag.start_x, UIFlag.start_y), PARTICLE_BT_SIZE),
             "Circle",
             ui_manager,
             container,
@@ -161,7 +242,7 @@ class UI:
             object_id=ObjectID(class_id="@particle_button"),
         )
         self.snow_bt = UIButton(
-            pygame.Rect((self.bt_spacing, self.start_y), PARTICLE_BT_SIZE),
+            pygame.Rect((UIFlag.bt_spacing, UIFlag.start_y), PARTICLE_BT_SIZE),
             "Snow",
             ui_manager,
             container,
@@ -170,7 +251,7 @@ class UI:
             object_id=ObjectID(class_id="@particle_button"),
         )
         self.leaves_bt = UIButton(
-            pygame.Rect((self.bt_spacing, self.start_y), PARTICLE_BT_SIZE),
+            pygame.Rect((UIFlag.bt_spacing, UIFlag.start_y), PARTICLE_BT_SIZE),
             "Leaves",
             ui_manager,
             container,
@@ -179,7 +260,7 @@ class UI:
             object_id=ObjectID(class_id="@particle_button"),
         )
         self.meteor_bt = UIButton(
-            pygame.Rect((self.bt_spacing, self.start_y), PARTICLE_BT_SIZE),
+            pygame.Rect((UIFlag.bt_spacing, UIFlag.start_y), PARTICLE_BT_SIZE),
             "Meteor",
             ui_manager,
             container,
@@ -188,7 +269,7 @@ class UI:
             object_id=ObjectID(class_id="@particle_button"),
         )
         self.firefly_bt = UIButton(
-            pygame.Rect((self.start_x, self.bt_spacing), PARTICLE_BT_SIZE),
+            pygame.Rect((UIFlag.start_x, UIFlag.bt_spacing), PARTICLE_BT_SIZE),
             "Firefly",
             ui_manager,
             container,
@@ -197,7 +278,7 @@ class UI:
             object_id=ObjectID(class_id="@particle_button"),
         )
         self.rain_bt = UIButton(
-            pygame.Rect((self.bt_spacing, self.bt_spacing), PARTICLE_BT_SIZE),
+            pygame.Rect((UIFlag.bt_spacing, UIFlag.bt_spacing), PARTICLE_BT_SIZE),
             "Rain",
             ui_manager,
             container,
@@ -211,7 +292,7 @@ class UI:
             object_id=ObjectID(class_id="@particle_button"),
         )
         self.sakura_bt = UIButton(
-            pygame.Rect((self.bt_spacing, self.bt_spacing), PARTICLE_BT_SIZE),
+            pygame.Rect((UIFlag.bt_spacing, UIFlag.bt_spacing), PARTICLE_BT_SIZE),
             "Sakura",
             ui_manager,
             container,
@@ -225,7 +306,7 @@ class UI:
             object_id=ObjectID(class_id="@particle_button"),
         )
         self.stars_bt = UIButton(
-            pygame.Rect((self.bt_spacing, self.bt_spacing), PARTICLE_BT_SIZE),
+            pygame.Rect((UIFlag.bt_spacing, UIFlag.bt_spacing), PARTICLE_BT_SIZE),
             "Stars",
             ui_manager,
             container,
@@ -242,8 +323,8 @@ class UI:
         # TODO: Fix confirm
         self.chose_color_bt = UIButton(
             pygame.Rect(
-                (self.start_x, self.separator_spacing),
-                (PARTICLE_BT_SIZE[0] * 2 + self.bt_spacing, 35),
+                (UIFlag.start_x, UIFlag.separator_spacing),
+                (PARTICLE_BT_SIZE[0] * 2 + UIFlag.bt_spacing, 35),
             ),
             "Choose Color",
             ui_manager,
@@ -254,7 +335,7 @@ class UI:
         )
 
         self.multiplier_label = UILabel(
-            pygame.Rect((self.start_x, self.separator_spacing), (200, 20)),
+            pygame.Rect((UIFlag.start_x, UIFlag.separator_spacing), (200, 20)),
             "Multiplier:",
             ui_manager,
             container,
@@ -262,7 +343,7 @@ class UI:
             object_id=ObjectID(class_id="@setting_indicator"),
         )
         self.multiplier_slider = UIHorizontalSlider(
-            pygame.Rect((self.start_x, self.spacing), (235, 25)),
+            pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
             1,
             (1, 100),
             ui_manager,
@@ -271,7 +352,7 @@ class UI:
         )
 
         self.min_fade_label = UILabel(
-            pygame.Rect((self.start_x, self.separator_spacing), (200, 20)),
+            pygame.Rect((UIFlag.start_x, UIFlag.separator_spacing), (200, 20)),
             "Min Fade Speed:",
             ui_manager,
             container,
@@ -279,16 +360,16 @@ class UI:
             object_id=ObjectID(class_id="@setting_indicator"),
         )
         self.min_fade_slider = UIHorizontalSlider(
-            pygame.Rect((self.start_x, self.spacing), (235, 25)),
-            self.default_min_fade,
-            (self.default_min_fade, self.default_max_fade - 1),
+            pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
+            UIFlag.default_min_fade,
+            (UIFlag.default_min_fade, UIFlag.default_max_fade - 1),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.min_fade_label},
         )
 
         self.max_fade_label = UILabel(
-            pygame.Rect((self.start_x, self.spacing), (200, 20)),
+            pygame.Rect((UIFlag.start_x, UIFlag.spacing), (200, 20)),
             "Max Fade Speed:",
             ui_manager,
             container,
@@ -296,16 +377,16 @@ class UI:
             object_id=ObjectID(class_id="@setting_indicator"),
         )
         self.max_fade_slider = UIHorizontalSlider(
-            pygame.Rect((self.start_x, self.spacing), (235, 25)),
-            self.default_min_fade + 1,
-            (self.default_min_fade + 1, self.default_max_fade),
+            pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
+            UIFlag.default_min_fade + 1,
+            (UIFlag.default_min_fade + 1, UIFlag.default_max_fade),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.max_fade_label},
         )
 
         self.min_size_label = UILabel(
-            pygame.Rect((self.start_x, self.separator_spacing), (200, 20)),
+            pygame.Rect((UIFlag.start_x, UIFlag.separator_spacing), (200, 20)),
             "Min Size:",
             ui_manager,
             container,
@@ -313,16 +394,16 @@ class UI:
             object_id=ObjectID(class_id="@setting_indicator"),
         )
         self.min_size_slider = UIHorizontalSlider(
-            pygame.Rect((self.start_x, self.spacing), (235, 25)),
+            pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
             1,
-            (1, self.default_max_size - 1),
+            (1, UIFlag.default_max_size - 1),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.min_size_label},
         )
 
         self.max_size_label = UILabel(
-            pygame.Rect((self.start_x, self.spacing), (200, 20)),
+            pygame.Rect((UIFlag.start_x, UIFlag.spacing), (200, 20)),
             "Max Size:",
             ui_manager,
             container,
@@ -331,16 +412,16 @@ class UI:
         )
 
         self.max_size_slider = UIHorizontalSlider(
-            pygame.Rect((self.start_x, self.spacing), (235, 25)),
+            pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
             10,
-            (2, self.default_max_size),
+            (2, UIFlag.default_max_size),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.max_size_label},
         )
 
         self.min_speed_label = UILabel(
-            pygame.Rect((self.start_x, self.separator_spacing), (200, 20)),
+            pygame.Rect((UIFlag.start_x, UIFlag.separator_spacing), (200, 20)),
             "Min Speed:",
             ui_manager,
             container,
@@ -349,16 +430,16 @@ class UI:
         )
 
         self.min_speed_slider = UIHorizontalSlider(
-            pygame.Rect((self.start_x, self.spacing), (235, 25)),
+            pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
             1,
-            (1, self.default_max_speed - 1),
+            (1, UIFlag.default_max_speed - 1),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.min_speed_label},
         )
 
         self.max_speed_label = UILabel(
-            pygame.Rect((self.start_x, self.spacing), (200, 20)),
+            pygame.Rect((UIFlag.start_x, UIFlag.spacing), (200, 20)),
             "Max Speed:",
             ui_manager,
             container,
@@ -367,13 +448,16 @@ class UI:
         )
 
         self.max_speed_slider = UIHorizontalSlider(
-            pygame.Rect((self.start_x, self.spacing), (235, 25)),
+            pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
             20,
-            (2, self.default_max_speed),
+            (2, UIFlag.default_max_speed),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.max_speed_label},
         )
+
+    def draw_mini_player(self, surface, video):
+        surface.blit(video, (SCREENX_RIGHT + SCREEN_SPACING, SCREEN_MARGIN))
 
     def draw_screen(self):
         self.screen_surf = pygame.surface.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))

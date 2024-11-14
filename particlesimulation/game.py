@@ -7,7 +7,7 @@ import pygame
 from pygame_gui import UIManager
 
 from particlesimulation.constants import *
-from particlesimulation.dataclass import GameFlag, UIFlag
+from particlesimulation.dataclass import GameFlag, ParticleFlag
 from particlesimulation.particles_manager import ParticlesManager
 from particlesimulation.ui import UI
 from particlesimulation.video_manager import VideoManager
@@ -27,6 +27,7 @@ class Game:
         self.video_manager = VideoManager()
         self.particles = ParticlesManager()
         self.ui = UI(self.ui_manager)
+        self.ui.set_particle_types("circle")
 
     def process_video_mode(self):
         if GameFlag.current_video_frame < self.get_frames_count:
@@ -48,8 +49,11 @@ class Game:
     def handle_keydown_events(self, event=None):
         if event.key == pygame.K_SPACE:
             self.toggle_video_playback()
+        if event.key == pygame.K_c:
+            self.particles.kill_all()
 
     def start_video_playback(self):
+        self.particles.kill_all()
         self.video_manager.music.play()
         self.ui.ui_state_enabled_video()
         self.video_manager.init_capture()
@@ -97,7 +101,7 @@ class Game:
         return None
 
     def spawn_particles_with_threshold(self, dark_pixels, threshold):
-        self.particles.spawn_particles_video_mode(
+        self.particles.call_particles_video_mode(
             self.get_types,
             self.get_multiplier,
             self.get_color,
@@ -112,7 +116,7 @@ class Game:
         )
 
     def spawn_default_particles(self):
-        self.particles.spawn_particle(
+        self.particles.call_particles(
             self.get_types,
             self.get_multiplier,
             self.get_color,
@@ -142,8 +146,8 @@ class Game:
         self.get_amount = len(self.particles.groups)
         self.get_fps = round(self.clock.get_fps(), 2)
 
-        self.get_types = UIFlag.current_type
-        self.get_color = UIFlag.current_color
+        self.get_types = ParticleFlag.current_type
+        self.get_color = ParticleFlag.current_color
         self.get_multiplier = self.ui.multiplier_slider.get_current_value()
         self.get_min_fade = self.ui.min_fade_slider.get_current_value()
         self.get_max_fade = self.ui.max_fade_slider.get_current_value()

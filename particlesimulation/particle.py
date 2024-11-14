@@ -1,3 +1,6 @@
+import random
+from random import randint
+
 import pygame.sprite
 
 from particlesimulation.constants import *
@@ -6,18 +9,16 @@ from particlesimulation.constants import *
 class Particle(pygame.sprite.Sprite):
     def __init__(
         self,
-        groups: pygame.sprite.Group,
-        pos: list[int],
-        color: str,
-        direction: pygame.math.Vector2,
-        speed: int,
+        groups: pygame.sprite.Group = None,
+        pos: list[int] = None,
+        color: str = None,
+        speed: int = None,
         size: int = 8,
         fade_speed: int = 240,
     ):
         super().__init__(groups)
         self.pos = pos
         self.color = color
-        self.direction = direction
         self.size = size
         self.speed = speed
         self.alpha = 255
@@ -37,7 +38,8 @@ class Particle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.pos)
 
     def move(self, dt):
-        self.pos += self.direction * self.speed * dt
+        direction = pygame.math.Vector2(0, 0)
+        self.pos += direction * self.speed * dt
         self.rect.center = self.pos
 
     def check_alpha(self):
@@ -52,3 +54,30 @@ class Particle(pygame.sprite.Sprite):
         self.move(dt)
         self.fade(dt)
         self.check_alpha()
+
+
+class SnowParticle(Particle):
+    def __init__(
+        self,
+        groups: pygame.sprite.Group,
+        pos: list[int],
+        color: str,
+        speed: int,
+        size: int,
+        fade_speed: int = 240,
+    ):
+        super().__init__(groups, pos, color, size, speed, fade_speed)
+        self.pos = pos
+        self.color = color
+        self.size = size
+        self.speed = speed
+        self.fade_speed = fade_speed
+
+        self.create_surf()
+
+    def move(self, dt):
+        move_side = pygame.math.Vector2(-1, 0) * self.speed * dt
+        move_down = pygame.math.Vector2(0, 1) * self.speed * dt
+        self.pos += move_side + move_down
+
+        self.rect.center = self.pos

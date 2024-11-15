@@ -53,8 +53,9 @@ class Game:
             if hasattr(self.ui, "loading_window"):
                 if event.ui_element == self.ui.loading_window:
                     self.ui.on_close_loading_window()
-            if event.ui_element == self.ui.dialog_window:
-                self.ui.on_close_dialog_window()
+            if hasattr(self.ui, "dialog_window"):
+                if event.ui_element == self.ui.dialog_window:
+                    self.ui.on_close_dialog_window()
 
     def handle_keydown_events(self, event=None):
         if event.key == pygame.K_SPACE:

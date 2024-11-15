@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import cv2
 import numpy as np
@@ -25,6 +26,8 @@ class VideoManager:
         pygame.mixer.init()
         self.music = pygame.mixer.music
         self.music.load(self.audio_path)
+
+        self.make_dir()
 
         self.frame_count = 0
         self.files_count = len(
@@ -53,7 +56,24 @@ class VideoManager:
         self.cap = cv2.VideoCapture(self.video_path)
         self.get_fps = self.cap.get(cv2.CAP_PROP_FPS)
 
-    # def calculate_total_progress(self):
+    def calculate_total_progress(self):
+        total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        frame_count = len(
+            [
+                name
+                for name in os.listdir(self.images_dir)
+                if os.path.isfile(os.path.join(self.images_dir, name))
+            ]
+        )
+        files_count = len(
+            [
+                name
+                for name in os.listdir(self.coords_dir)
+                if os.path.isfile(os.path.join(self.coords_dir, name))
+            ]
+        )
+        total_percentages = (frame_count + files_count) / (2 * total_frames)
+        return total_percentages
 
     def load_coords(self, frame_number):
         coords_file_name = "ba-" + str(frame_number).zfill(4) + ".npy"
@@ -65,30 +85,41 @@ class VideoManager:
             print(f"File {coords_file_name} does not exist.")
             return []
 
-    def delete_frames(self):
+    def delete_frames_contents(self):
         if os.path.exists(self.images_dir):
-            for file_name in os.listdir(self.images_dir):
-                file_path = os.path.join(self.images_dir, file_name)
-                if os.path.isfile(file_path):
-                    os.remove(file_path)
-                print(f"Deleted: {file_name}")
+            for filename in os.listdir(self.images_dir):
+                file_path = os.path.join(self.images_dir, filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    print(f"Failed to delete {file_path}: {e}")
 
-    def delete_coords(self):
+    def delete_coords_contents(self):
         if os.path.exists(self.coords_dir):
-            for file_name in os.listdir(self.coords_dir):
-                file_path = os.path.join(self.coords_dir, file_name)
-                if os.path.isfile(file_path):
-                    os.remove(file_path)
-                print(f"Deleted: {file_name}")
+            for filename in os.listdir(self.coords_dir):
+                file_path = os.path.join(self.coords_dir, filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)  # Remove file or symbolic link
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)  # Remove subdirectory
+                except Exception as e:
+                    print(f"Failed to delete {file_path}: {e}")
 
     def make_dir(self):
         if not os.path.exists(self.images_dir):
             os.makedirs(self.images_dir)
-        elif not os.path.exists(self.coords_dir):
+        if not os.path.exists(self.coords_dir):
             os.makedirs(self.coords_dir)
 
     def save_coords(self):
         for frame_count in range(self.frame_count - 1):
+            if not GameFlag.is_video_loading_in_progress:
+                break
+
             frame_file_name = "ba-" + str(frame_count).zfill(4) + ".jpg"
             frame_file_path = os.path.join(self.images_dir, frame_file_name)
             coords_file_name = frame_file_name[:-4]
@@ -100,14 +131,17 @@ class VideoManager:
                 )
                 np.save(coords_output_file, dark_pixels_array)
 
-                print(f"Saved coordinates: {coords_file_name}")
+                print(f"Coordinates loaded: {coords_file_name}")
             else:
                 print(f"File {frame_file_name} doesn't exist")
 
-        self.delete_frames()
+        self.delete_frames_contents()
 
     def video_to_images(self):
         while self.cap.isOpened():
+            if not GameFlag.is_video_loading_in_progress:
+                break
+
             ret, frame = self.cap.read()
             if not ret:
                 break
@@ -119,7 +153,7 @@ class VideoManager:
                 self.images_dir + "/" + frame_output_name,
                 resized_frame,
             )
-            print(f"Created frames: {frame_output_name}")
+            print(f"Frames created: {frame_output_name}")
             self.frame_count += 1
 
         self.cap.release()
@@ -144,10 +178,15 @@ class VideoManager:
 
         self.cap.release()
 
-    def loading_operation(self):
-        # Delete existing file
-        self.delete_frames()
-        self.delete_coords()
+    def stop_loading_operation(self):
+        GameFlag.is_video_loading_in_progress = False
+        self.delete_coords_contents()
+        self.delete_frames_contents()
+
+    def start_loading_operation(self):
+        GameFlag.is_video_loading_in_progress = True
+        self.delete_frames_contents()
+        self.delete_coords_contents()
 
         GameFlag.video_loading_progress = 0
         self.make_dir()

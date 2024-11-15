@@ -1,9 +1,13 @@
 import random
 from random import randint
 import pygame
+
+from particlesimulation.particles.meteor_particle import MeteorParticle
+from particlesimulation.particles.sakura_particle import SakuraParticle
+from particlesimulation.particles.snow_particle import SnowParticle
 from particlesimulation.constants import *
 from particlesimulation.dataclass import GameFlag
-from particlesimulation.particle import Particle, SnowParticle
+from particlesimulation.particles.particle import Particle
 
 
 class ParticlesManager:
@@ -26,6 +30,8 @@ class ParticlesManager:
         draw_method = {
             "circle": self._create_particle,
             "snow": self._create_snow_particle,
+            "sakura": self._create_sakura_particle,
+            "meteor": self._create_meteor_particle,
         }.get(types)
 
         if draw_method:
@@ -135,12 +141,72 @@ class ParticlesManager:
             if GameFlag.is_video_running:
                 pos = pixel_pos
             else:
-                pos = randint(0, SCREEN_WIDTH), randint(0, SCREEN_HEIGHT)
+                pos = randint(0, SCREEN_WIDTH), randint(-10, SCREEN_HEIGHT)
             speed = randint(min_speed, max_speed)
             size = randint(min_size, max_size)
             fade_speed = randint(min_fade, max_fade)
 
             SnowParticle(
+                groups=self.groups,
+                pos=pos,
+                color=color,
+                speed=speed,
+                size=size,
+                fade_speed=fade_speed,
+            )
+
+    def _create_sakura_particle(
+        self,
+        amount,
+        color,
+        min_speed,
+        max_speed,
+        min_size,
+        max_size,
+        min_fade,
+        max_fade,
+        pixel_pos=None,
+    ):
+        for _ in range(amount):
+            if GameFlag.is_video_running:
+                pos = pixel_pos
+            else:
+                pos = randint(0, SCREEN_WIDTH), randint(-10, SCREEN_HEIGHT)
+            speed = randint(min_speed, max_speed)
+            size = randint(min_size, max_size)
+            fade_speed = randint(min_fade, max_fade)
+
+            SakuraParticle(
+                groups=self.groups,
+                pos=pos,
+                color=color,
+                speed=speed,
+                size=size,
+                fade_speed=fade_speed,
+            )
+
+    def _create_meteor_particle(
+        self,
+        amount,
+        color,
+        min_speed,
+        max_speed,
+        min_size,
+        max_size,
+        min_fade,
+        max_fade,
+        pixel_pos=None,
+    ):
+        for _ in range(amount):
+            if GameFlag.is_video_running:
+                pos = pixel_pos
+            else:
+                pos = randint(0, SCREEN_WIDTH), randint(-10, SCREEN_HEIGHT)
+            speed = randint(min_speed, max_speed)
+            size = randint(min_size, max_size)
+            fade_speed = randint(min_fade, max_fade)
+
+            MeteorParticle(
                 groups=self.groups,
                 pos=pos,
                 color=color,

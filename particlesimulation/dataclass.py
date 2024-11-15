@@ -10,7 +10,9 @@ class GameFlag:
     is_running = True
     is_paused = False
     is_video_running = False
-    is_video_loaded = True
+    is_video_loading_in_progress = False
+    is_video_loaded = False
+    is_dialog_opened = False
     max_frame_rate = 120
     current_video_frame = 0
     video_loading_progress = 0
@@ -24,7 +26,7 @@ class ParticleFlag:
     default_min_size = 1
     default_max_size = 200
     default_min_speed = 1
-    default_max_speed = 500
+    default_max_speed = 600
 
     # Current Value
     current_type = "circle"

@@ -1,14 +1,14 @@
 import os
 import sys
-import threading
 
 import cv2
 import pygame
+import pygame_gui
 from pygame_gui import UIManager
 
 from particlesimulation.constants import *
-from particlesimulation.dataclass import GameFlag, UIFlag
-from particlesimulation.particles_manager import ParticlesManager
+from particlesimulation.dataclass import GameFlag, ParticleFlag
+from particlesimulation.particles.particles_manager import ParticlesManager
 from particlesimulation.ui import UI
 from particlesimulation.video_manager import VideoManager
 
@@ -20,13 +20,18 @@ class Game:
         pygame.display.set_caption(GAME_TITLE)
         self.clock = pygame.time.Clock()
 
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        theme_path = os.path.join(script_dir, "styles", "theme.json")
+        self.this_dir = os.path.dirname(os.path.abspath(__file__))
+        theme_path = os.path.join(self.this_dir, "styles", "theme.json")
         self.ui_manager = UIManager((WINDOW_WIDTH, WINDOW_HEIGHT), theme_path)
 
         self.video_manager = VideoManager()
         self.particles = ParticlesManager()
         self.ui = UI(self.ui_manager)
+        self.first_run_init()
+
+    def first_run_init(self):
+        self.ui.set_particle_types("circle")
+        self.check_video_availability()
 
     def process_video_mode(self):
         if GameFlag.current_video_frame < self.get_frames_count:
@@ -44,12 +49,18 @@ class Game:
 
     def handle_user_events(self, event=None):
         self.ui.enforce_slider_limit()
+        if event.user_type == pygame_gui.UI_WINDOW_CLOSE:
+            if event.ui_element == self.ui.loading_window:
+                self.ui.on_close_loading_window()
 
     def handle_keydown_events(self, event=None):
         if event.key == pygame.K_SPACE:
             self.toggle_video_playback()
+        if event.key == pygame.K_c:
+            self.particles.kill_all()
 
     def start_video_playback(self):
+        self.particles.kill_all()
         self.video_manager.music.play()
         self.ui.ui_state_enabled_video()
         self.video_manager.init_capture()
@@ -68,11 +79,9 @@ class Game:
             else:
                 self.stop_video_playback()
         else:
-            self.ui.draw_dialog_window(self.ui_manager)
-            # thread = threading.Thread(
-            #     target=self.video_manager.loading_operation
-            # )
-            # thread.start()
+            if not GameFlag.is_dialog_opened:
+                GameFlag.is_dialog_opened = True
+                self.ui.draw_dialog_window(self.ui_manager)
 
     def get_pixels_threshold_video(self, dark_pixels):
         dark_pixels_threshold = [
@@ -97,7 +106,7 @@ class Game:
         return None
 
     def spawn_particles_with_threshold(self, dark_pixels, threshold):
-        self.particles.spawn_particles_video_mode(
+        self.particles.call_particles_video_mode(
             self.get_types,
             self.get_multiplier,
             self.get_color,
@@ -112,7 +121,7 @@ class Game:
         )
 
     def spawn_default_particles(self):
-        self.particles.spawn_particle(
+        self.particles.call_particles(
             self.get_types,
             self.get_multiplier,
             self.get_color,
@@ -137,13 +146,22 @@ class Game:
     def update_time_delta(self):
         self.dt = self.clock.tick(GameFlag.max_frame_rate) / 1000
 
+    def check_video_availability(self):
+        coords_dir = os.path.join(self.this_dir, "coordinates")
+        if os.path.isdir(coords_dir) and os.listdir(coords_dir):
+            GameFlag.is_video_loaded = True
+            print("Video is loaded")
+        else:
+            GameFlag.is_video_loaded = False
+            print("Video not loaded")
+
     def fetch_info(self):
         self.get_frames_count = self.video_manager.files_count
         self.get_amount = len(self.particles.groups)
         self.get_fps = round(self.clock.get_fps(), 2)
 
-        self.get_types = UIFlag.current_type
-        self.get_color = UIFlag.current_color
+        self.get_types = ParticleFlag.current_type
+        self.get_color = ParticleFlag.current_color
         self.get_multiplier = self.ui.multiplier_slider.get_current_value()
         self.get_min_fade = self.ui.min_fade_slider.get_current_value()
         self.get_max_fade = self.ui.max_fade_slider.get_current_value()
@@ -167,6 +185,13 @@ class Game:
         self.ui.max_size_label.set_text(f"Max Size: {self.get_max_size}")
         self.ui.min_speed_label.set_text(f"Min Speed: {self.get_min_speed}")
         self.ui.max_speed_label.set_text(f"Max Speed: {self.get_max_speed}")
+
+        if GameFlag.is_video_loading_in_progress:
+            self.ui.loading_bar.percent_full = (
+                self.video_manager.calculate_total_progress()
+            )
+            if self.ui.loading_bar.percent_full >= 1.0:
+                self.ui.on_close_loading_window()
 
     def update_particles(self):
         self.particles.groups.draw(self.ui.screen_surf)
@@ -202,7 +227,7 @@ class Game:
                 GameFlag.is_running = False
                 self.quit()
             if event.type == pygame.USEREVENT:
-                self.handle_user_events()
+                self.handle_user_events(event)
             if event.type == pygame.KEYDOWN:
                 self.handle_keydown_events(event)
 

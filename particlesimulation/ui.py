@@ -1,4 +1,5 @@
-import cv2
+import threading
+
 import pygame
 from pygame_gui.elements import (
     UIHorizontalSlider,
@@ -7,14 +8,14 @@ from pygame_gui.elements import (
     UIScrollingContainer,
     UIWindow,
     UITextBox,
-    UIProgressBar,
     UIStatusBar,
 )
 from pygame_gui.core import ObjectID
 from pygame_gui.windows import UIColourPickerDialog
 
 from particlesimulation.constants import *
-from particlesimulation.dataclass import UIFlag, GameFlag
+from particlesimulation.dataclass import UIFlag, GameFlag, ParticleFlag
+from particlesimulation.video_manager import VideoManager
 
 
 class UI:
@@ -24,42 +25,78 @@ class UI:
         self.draw_container(ui_manager)
         self.draw_components(ui_manager, self.scroll_container)
 
+        self.video_manager = VideoManager()
+
     def set_particle_types(self, types):
         match types:
             case "circle":
-                self.current_type = "circle"
-                self.current_color = pygame.Color(255, 255, 255)
+                ParticleFlag.current_type = "circle"
+                ParticleFlag.current_color = pygame.Color(255, 255, 255)
                 if not GameFlag.is_video_running:
                     self.multiplier_slider.set_current_value(1)
-                    self.min_fade_slider.set_current_value(100)
-                    self.max_fade_slider.set_current_value(200)
+                    self.min_fade_slider.set_current_value(
+                        ParticleFlag.default_max_fade - 1
+                    )
+                    self.max_fade_slider.set_current_value(
+                        ParticleFlag.default_max_fade
+                    )
                     self.min_size_slider.set_current_value(1)
                     self.max_size_slider.set_current_value(15)
                     self.min_speed_slider.set_current_value(1)
                     self.max_speed_slider.set_current_value(2)
             case "snow":
-                self.current_type = "snow"
-                self.current_color = pygame.Color(255, 255, 255)
+                ParticleFlag.current_type = "snow"
+                ParticleFlag.current_color = pygame.Color(168, 235, 255)
                 if not GameFlag.is_video_running:
                     self.multiplier_slider.set_current_value(1)
-                    self.min_fade_slider.set_current_value(100)
-                    self.max_fade_slider.set_current_value(101)
+                    self.min_fade_slider.set_current_value(50)
+                    self.max_fade_slider.set_current_value(100)
                     self.min_size_slider.set_current_value(1)
                     self.max_size_slider.set_current_value(10)
-                    self.min_speed_slider.set_current_value(10)
-                    self.max_speed_slider.set_current_value(30)
+                    self.min_speed_slider.set_current_value(100)
+                    self.max_speed_slider.set_current_value(300)
             case "leaves":
-                self.current_type = "leaves"
+                ParticleFlag.current_type = "leaves"
             case "meteor":
-                self.current_type = "meteor"
+                ParticleFlag.current_type = "meteor"
+                ParticleFlag.current_color = pygame.Color(255, 255, 255)
+                if not GameFlag.is_video_running:
+                    self.multiplier_slider.set_current_value(1)
+                    self.min_fade_slider.set_current_value(
+                        ParticleFlag.default_min_fade
+                    )
+                    self.max_fade_slider.set_current_value(
+                        ParticleFlag.default_min_fade + 1
+                    )
+                    self.min_size_slider.set_current_value(3)
+                    self.max_size_slider.set_current_value(10)
+                    self.min_speed_slider.set_current_value(
+                        ParticleFlag.default_max_speed - 10
+                    )
+                    self.max_speed_slider.set_current_value(
+                        ParticleFlag.default_max_speed
+                    )
             case "firefly":
-                self.current_type = "firefly"
+                ParticleFlag.current_type = "firefly"
             case "rain":
-                self.current_type = "rain"
+                ParticleFlag.current_type = "rain"
             case "sakura":
-                self.current_type = "sakura"
+                ParticleFlag.current_type = "sakura"
+                ParticleFlag.current_color = pygame.Color(255, 182, 193)
+                if not GameFlag.is_video_running:
+                    self.multiplier_slider.set_current_value(1)
+                    self.min_fade_slider.set_current_value(
+                        ParticleFlag.default_min_fade
+                    )
+                    self.max_fade_slider.set_current_value(
+                        ParticleFlag.default_min_fade + 1
+                    )
+                    self.min_size_slider.set_current_value(10)
+                    self.max_size_slider.set_current_value(20)
+                    self.min_speed_slider.set_current_value(20)
+                    self.max_speed_slider.set_current_value(80)
             case "stars":
-                self.current_type = "stars"
+                ParticleFlag.current_type = "stars"
 
     def enforce_slider_limit(self):
         min_fade = self.min_fade_slider.get_current_value()
@@ -85,11 +122,19 @@ class UI:
             self.max_fade_slider.set_current_value(min_fade + 1)
 
     def ui_state_enabled_video(self):
+        self.circle_bt.disable()
+        self.snow_bt.disable()
+        self.leaves_bt.disable()
+        self.meteor_bt.disable()
+        self.firefly_bt.disable()
+        self.rain_bt.disable()
+        self.sakura_bt.disable()
+        self.stars_bt.disable()
         self.multiplier_slider.set_current_value(1)
         self.multiplier_slider.disable()
-        self.min_fade_slider.set_current_value(UIFlag.default_max_fade - 1)
+        self.min_fade_slider.set_current_value(ParticleFlag.default_max_fade - 1)
         self.min_fade_slider.disable()
-        self.max_fade_slider.set_current_value(UIFlag.default_max_fade)
+        self.max_fade_slider.set_current_value(ParticleFlag.default_max_fade)
         self.max_fade_slider.disable()
         self.min_size_slider.set_current_value(1)
         self.min_size_slider.disable()
@@ -113,6 +158,14 @@ class UI:
         )
 
     def ui_state_disabled_video(self):
+        self.circle_bt.enable()
+        self.snow_bt.enable()
+        self.leaves_bt.enable()
+        self.meteor_bt.enable()
+        self.firefly_bt.enable()
+        self.rain_bt.enable()
+        self.sakura_bt.enable()
+        self.stars_bt.enable()
         self.multiplier_slider.enable()
         self.min_fade_slider.enable()
         self.max_fade_slider.enable()
@@ -130,6 +183,17 @@ class UI:
             ),
             False,
         )
+
+    def draw_mini_player(self, surface, video):
+        surface.blit(video, (SCREENX_RIGHT + SCREEN_SPACING, SCREEN_MARGIN))
+
+    def draw_screen(self):
+        self.screen_surf = pygame.surface.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        screen_rect = pygame.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+        pygame.draw.rect(self.screen_surf, BASE_COLOR, screen_rect, width=2)
+
+    def surface_blit(self, surface):
+        surface.blit(self.screen_surf, (SCREENX_LEFT, SCREENY_TOP))
 
     def draw_color_picker_dialog(self, ui_manager):
         self.color_picker = UIColourPickerDialog(
@@ -149,8 +213,17 @@ class UI:
             allow_scroll_x=False,
         )
 
-    def percent(self):
-        return 0.8
+    def on_yes_dialog_window(self, ui_manager):
+        self.draw_loading_window(ui_manager)
+        self.thread = threading.Thread(
+            target=self.video_manager.start_loading_operation
+        )
+        self.thread.start()
+
+    def on_close_loading_window(self):
+        self.loading_window.kill()
+        self.video_manager.stop_loading_operation()
+        self.thread.join()
 
     def draw_loading_window(self, ui_manager):
         self.dialog_window.kill()
@@ -170,15 +243,15 @@ class UI:
             pygame.Rect((10, 60), (480, 30)),
             manager=ui_manager,
             container=self.loading_window,
-            percent_method=self.percent,
         )
         self.loading_bar.bar_filled_colour = "blue"
+
         self.cancel_bt = UIButton(
             pygame.Rect((500 / 2 - 100 / 2, 20), (100, 40)),
             "Cancel",
             ui_manager,
             container=self.loading_window,
-            command=self.loading_window.kill,
+            command=lambda: self.on_close_loading_window(),
             anchors={"top": "top", "top_target": self.loading_bar},
         )
 
@@ -202,12 +275,26 @@ class UI:
             object_id=ObjectID(class_id="@alert_text"),
         )
         self.yes_bt = UIButton(
-            pygame.Rect((500 / 2 - 100 / 2, 10), (100, 40)),
+            pygame.Rect((500 / 2 - 210 / 2, 10), (100, 40)),
             "Yes",
             ui_manager,
             self.dialog_window,
-            command=lambda: self.draw_loading_window(ui_manager),
+            command=lambda: self.on_yes_dialog_window(ui_manager),
             anchors={"top": "top", "top_target": self.alert_label},
+        )
+
+        self.no_bt = UIButton(
+            pygame.Rect((10, 10), (100, 40)),
+            "No",
+            ui_manager,
+            self.dialog_window,
+            command=lambda: self.dialog_window.kill(),
+            anchors={
+                "left": "left",
+                "top": "top",
+                "top_target": self.alert_label,
+                "left_target": self.yes_bt,
+            },
         )
 
     def draw_components(self, ui_manager, container):
@@ -361,8 +448,8 @@ class UI:
         )
         self.min_fade_slider = UIHorizontalSlider(
             pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
-            UIFlag.default_min_fade,
-            (UIFlag.default_min_fade, UIFlag.default_max_fade - 1),
+            ParticleFlag.default_min_fade,
+            (ParticleFlag.default_min_fade, ParticleFlag.default_max_fade - 1),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.min_fade_label},
@@ -378,8 +465,8 @@ class UI:
         )
         self.max_fade_slider = UIHorizontalSlider(
             pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
-            UIFlag.default_min_fade + 1,
-            (UIFlag.default_min_fade + 1, UIFlag.default_max_fade),
+            ParticleFlag.default_min_fade + 1,
+            (ParticleFlag.default_min_fade + 1, ParticleFlag.default_max_fade),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.max_fade_label},
@@ -396,7 +483,7 @@ class UI:
         self.min_size_slider = UIHorizontalSlider(
             pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
             1,
-            (1, UIFlag.default_max_size - 1),
+            (1, ParticleFlag.default_max_size - 1),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.min_size_label},
@@ -414,7 +501,7 @@ class UI:
         self.max_size_slider = UIHorizontalSlider(
             pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
             10,
-            (2, UIFlag.default_max_size),
+            (2, ParticleFlag.default_max_size),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.max_size_label},
@@ -432,7 +519,7 @@ class UI:
         self.min_speed_slider = UIHorizontalSlider(
             pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
             1,
-            (1, UIFlag.default_max_speed - 1),
+            (1, ParticleFlag.default_max_speed - 1),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.min_speed_label},
@@ -450,19 +537,8 @@ class UI:
         self.max_speed_slider = UIHorizontalSlider(
             pygame.Rect((UIFlag.start_x, UIFlag.spacing), (235, 25)),
             20,
-            (2, UIFlag.default_max_speed),
+            (2, ParticleFlag.default_max_speed),
             ui_manager,
             container,
             anchors={"top": "top", "top_target": self.max_speed_label},
         )
-
-    def draw_mini_player(self, surface, video):
-        surface.blit(video, (SCREENX_RIGHT + SCREEN_SPACING, SCREEN_MARGIN))
-
-    def draw_screen(self):
-        self.screen_surf = pygame.surface.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        screen_rect = pygame.Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
-        pygame.draw.rect(self.screen_surf, BASE_COLOR, screen_rect, width=2)
-
-    def surface_blit(self, surface):
-        surface.blit(self.screen_surf, (SCREENX_LEFT, SCREENY_TOP))

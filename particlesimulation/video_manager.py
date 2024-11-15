@@ -131,7 +131,7 @@ class VideoManager:
                 )
                 np.save(coords_output_file, dark_pixels_array)
 
-                print(f"Coordinates loaded: {coords_file_name}")
+                # print(f"Coordinates loaded: {coords_file_name}")
             else:
                 print(f"File {frame_file_name} doesn't exist")
 
@@ -153,7 +153,7 @@ class VideoManager:
                 self.images_dir + "/" + frame_output_name,
                 resized_frame,
             )
-            print(f"Frames created: {frame_output_name}")
+            # print(f"Frames created: {frame_output_name}")
             self.frame_count += 1
 
         self.cap.release()

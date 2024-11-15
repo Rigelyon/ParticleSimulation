@@ -50,8 +50,11 @@ class Game:
     def handle_user_events(self, event=None):
         self.ui.enforce_slider_limit()
         if event.user_type == pygame_gui.UI_WINDOW_CLOSE:
-            if event.ui_element == self.ui.loading_window:
-                self.ui.on_close_loading_window()
+            if hasattr(self.ui, "loading_window"):
+                if event.ui_element == self.ui.loading_window:
+                    self.ui.on_close_loading_window()
+            if event.ui_element == self.ui.dialog_window:
+                self.ui.on_close_dialog_window()
 
     def handle_keydown_events(self, event=None):
         if event.key == pygame.K_SPACE:
@@ -72,6 +75,7 @@ class Game:
         self.video_manager.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
     def toggle_video_playback(self):
+        self.check_video_availability()
         if GameFlag.is_video_loaded:
             GameFlag.is_video_running = not GameFlag.is_video_running
             if GameFlag.is_video_running:
@@ -190,8 +194,8 @@ class Game:
             self.ui.loading_bar.percent_full = (
                 self.video_manager.calculate_total_progress()
             )
-            if self.ui.loading_bar.percent_full >= 1.0:
-                self.ui.on_close_loading_window()
+            if self.ui.loading_bar.percent_full >= 0.99:
+                self.ui.on_finished_loading()
 
     def update_particles(self):
         self.particles.groups.draw(self.ui.screen_surf)

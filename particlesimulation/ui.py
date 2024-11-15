@@ -213,17 +213,27 @@ class UI:
             allow_scroll_x=False,
         )
 
+    def on_close_dialog_window(self):
+        self.dialog_window.kill()
+        GameFlag.is_dialog_opened = False
+
     def on_yes_dialog_window(self, ui_manager):
         self.draw_loading_window(ui_manager)
         self.thread = threading.Thread(
             target=self.video_manager.start_loading_operation
         )
         self.thread.start()
+        GameFlag.is_dialog_opened = False
 
     def on_close_loading_window(self):
         self.loading_window.kill()
         self.video_manager.stop_loading_operation()
         self.thread.join()
+
+    def on_finished_loading(self):
+        self.loading_window.kill()
+        self.thread.join()
+        GameFlag.is_video_loading_in_progress = False
 
     def draw_loading_window(self, ui_manager):
         self.dialog_window.kill()

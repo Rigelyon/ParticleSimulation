@@ -180,8 +180,6 @@ class VideoManager:
 
     def stop_loading_operation(self):
         GameFlag.is_video_loading_in_progress = False
-        self.delete_coords_contents()
-        self.delete_frames_contents()
 
     def start_loading_operation(self):
         GameFlag.is_video_loading_in_progress = True

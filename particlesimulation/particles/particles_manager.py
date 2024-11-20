@@ -2,6 +2,7 @@ import random
 from random import randint
 import pygame
 
+from particlesimulation.particles.circle_particle import CircleParticle
 from particlesimulation.particles.meteor_particle import MeteorParticle
 from particlesimulation.particles.sakura_particle import SakuraParticle
 from particlesimulation.particles.snow_particle import SnowParticle
@@ -28,10 +29,14 @@ class ParticlesManager:
         pixel_pos=None,
     ):
         draw_method = {
-            "circle": self._create_particle,
+            "circle": self._create_circle_particle,
             "snow": self._create_snow_particle,
-            "sakura": self._create_sakura_particle,
+            "leaves": None,
             "meteor": self._create_meteor_particle,
+            "firefly": None,
+            "rain": self._create_rain_particle,
+            "sakura": self._create_sakura_particle,
+            "stars": None,
         }.get(types)
 
         if draw_method:
@@ -95,7 +100,7 @@ class ParticlesManager:
         while len(self.groups) > MAX_PARTICLES - 50:
             self.groups.sprites()[0].kill()
 
-    def _create_particle(
+    def _create_circle_particle(
         self,
         amount,
         color,
@@ -116,7 +121,7 @@ class ParticlesManager:
             size = randint(min_size, max_size)
             fade_speed = randint(min_fade, max_fade)
 
-            Particle(
+            CircleParticle(
                 groups=self.groups,
                 pos=pos,
                 color=color,
@@ -186,6 +191,36 @@ class ParticlesManager:
             )
 
     def _create_meteor_particle(
+        self,
+        amount,
+        color,
+        min_speed,
+        max_speed,
+        min_size,
+        max_size,
+        min_fade,
+        max_fade,
+        pixel_pos=None,
+    ):
+        for _ in range(amount):
+            if GameFlag.is_video_running:
+                pos = pixel_pos
+            else:
+                pos = randint(0, SCREEN_WIDTH), randint(-10, SCREEN_HEIGHT)
+            speed = randint(min_speed, max_speed)
+            size = randint(min_size, max_size)
+            fade_speed = randint(min_fade, max_fade)
+
+            MeteorParticle(
+                groups=self.groups,
+                pos=pos,
+                color=color,
+                speed=speed,
+                size=size,
+                fade_speed=fade_speed,
+            )
+
+    def _create_rain_particle(
         self,
         amount,
         color,

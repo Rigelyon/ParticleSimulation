@@ -1,5 +1,6 @@
 import threading
 
+import cv2
 import pygame
 from pygame_gui.elements import (
     UIHorizontalSlider,
@@ -80,6 +81,23 @@ class UI:
                 ParticleFlag.current_type = "firefly"
             case "rain":
                 ParticleFlag.current_type = "rain"
+                ParticleFlag.current_color = pygame.Color(255, 255, 255)
+                if not GameFlag.is_video_running:
+                    self.multiplier_slider.set_current_value(1)
+                    self.min_fade_slider.set_current_value(
+                        ParticleFlag.default_min_fade
+                    )
+                    self.max_fade_slider.set_current_value(
+                        ParticleFlag.default_min_fade + 1
+                    )
+                    self.min_size_slider.set_current_value(3)
+                    self.max_size_slider.set_current_value(10)
+                    self.min_speed_slider.set_current_value(
+                        ParticleFlag.default_max_speed - 10
+                    )
+                    self.max_speed_slider.set_current_value(
+                        ParticleFlag.default_max_speed
+                    )
             case "sakura":
                 ParticleFlag.current_type = "sakura"
                 ParticleFlag.current_color = pygame.Color(255, 182, 193)
@@ -213,8 +231,16 @@ class UI:
             allow_scroll_x=False,
         )
 
+    def on_close_restart_dialog_window(self):
+        self.restart_dialog_window.kill()
+        GameFlag.is_dialog_opened = False
+
+    def on_yes_restart_dialog_window(self, ui_manager):
+        GameFlag.is_dialog_opened = False
+        GameFlag.is_running = False
+
     def on_close_dialog_window(self):
-        self.dialog_window.kill()
+        self.load_video_dialog_window.kill()
         GameFlag.is_dialog_opened = False
 
     def on_yes_dialog_window(self, ui_manager):
@@ -230,13 +256,14 @@ class UI:
         self.video_manager.stop_loading_operation()
         self.thread.join()
 
-    def on_finished_loading(self):
+    def on_finished_loading(self, ui_manager):
         self.loading_window.kill()
         self.thread.join()
         GameFlag.is_video_loading_in_progress = False
+        self.draw_restart_confirmation_dialog_window(ui_manager)
 
     def draw_loading_window(self, ui_manager):
-        self.dialog_window.kill()
+        self.load_video_dialog_window.kill()
         self.loading_window = UIWindow(
             pygame.Rect((WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4), (500, 200)),
             ui_manager,
@@ -265,8 +292,8 @@ class UI:
             anchors={"top": "top", "top_target": self.loading_bar},
         )
 
-    def draw_dialog_window(self, ui_manager):
-        self.dialog_window = UIWindow(
+    def draw_load_video_confirmation_dialog_window(self, ui_manager):
+        self.load_video_dialog_window = UIWindow(
             pygame.Rect((WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4), (500, 200)),
             ui_manager,
             window_display_title="Alert!",
@@ -275,7 +302,7 @@ class UI:
             "Pressing Space Bar will actually plays the video sequence, but you haven't load the video. Do you want to load the video now?",
             pygame.Rect((10, 20), (480, 80)),
             manager=ui_manager,
-            container=self.dialog_window,
+            container=self.load_video_dialog_window,
             anchors={
                 "top": "top",
                 "bottom": "bottom",
@@ -288,7 +315,7 @@ class UI:
             pygame.Rect((500 / 2 - 210 / 2, 10), (100, 40)),
             "Yes",
             ui_manager,
-            self.dialog_window,
+            self.load_video_dialog_window,
             command=lambda: self.on_yes_dialog_window(ui_manager),
             anchors={"top": "top", "top_target": self.alert_label},
         )
@@ -297,8 +324,50 @@ class UI:
             pygame.Rect((10, 10), (100, 40)),
             "No",
             ui_manager,
-            self.dialog_window,
-            command=lambda: self.dialog_window.kill(),
+            self.load_video_dialog_window,
+            command=lambda: self.load_video_dialog_window.kill(),
+            anchors={
+                "left": "left",
+                "top": "top",
+                "top_target": self.alert_label,
+                "left_target": self.yes_bt,
+            },
+        )
+
+    def draw_restart_confirmation_dialog_window(self, ui_manager):
+        self.restart_dialog_window = UIWindow(
+            pygame.Rect((WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4), (500, 200)),
+            ui_manager,
+            window_display_title="Alert!",
+        )
+        self.alert_label = UITextBox(
+            "Video is loaded, restart the program to start playing video sequence. You can play by pressing the space bar",
+            pygame.Rect((10, 20), (480, 80)),
+            manager=ui_manager,
+            container=self.restart_dialog_window,
+            anchors={
+                "top": "top",
+                "bottom": "bottom",
+                "left": "left",
+                "right": "right",
+            },
+            object_id=ObjectID(class_id="@alert_text"),
+        )
+        self.yes_bt = UIButton(
+            pygame.Rect((500 / 2 - 210 / 2, 10), (100, 40)),
+            "Quit Program",
+            ui_manager,
+            self.restart_dialog_window,
+            command=lambda: self.on_yes_restart_dialog_window(ui_manager),
+            anchors={"top": "top", "top_target": self.alert_label},
+        )
+
+        self.no_bt = UIButton(
+            pygame.Rect((10, 10), (100, 40)),
+            "Later",
+            ui_manager,
+            self.restart_dialog_window,
+            command=lambda: self.restart_dialog_window.kill(),
             anchors={
                 "left": "left",
                 "top": "top",

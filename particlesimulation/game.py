@@ -53,9 +53,12 @@ class Game:
             if hasattr(self.ui, "loading_window"):
                 if event.ui_element == self.ui.loading_window:
                     self.ui.on_close_loading_window()
-            if hasattr(self.ui, "dialog_window"):
-                if event.ui_element == self.ui.dialog_window:
+            if hasattr(self.ui, "load_video_dialog_window"):
+                if event.ui_element == self.ui.load_video_dialog_window:
                     self.ui.on_close_dialog_window()
+            if hasattr(self.ui, "restart_dialog_window"):
+                if event.ui_element == self.ui.restart_dialog_window:
+                    self.ui.on_close_restart_dialog_window()
 
     def handle_keydown_events(self, event=None):
         if event.key == pygame.K_SPACE:
@@ -86,7 +89,7 @@ class Game:
         else:
             if not GameFlag.is_dialog_opened:
                 GameFlag.is_dialog_opened = True
-                self.ui.draw_dialog_window(self.ui_manager)
+                self.ui.draw_load_video_confirmation_dialog_window(self.ui_manager)
 
     def get_pixels_threshold_video(self, dark_pixels):
         dark_pixels_threshold = [
@@ -196,7 +199,8 @@ class Game:
                 self.video_manager.calculate_total_progress()
             )
             if self.ui.loading_bar.percent_full >= 0.99:
-                self.ui.on_finished_loading()
+                self.ui.on_finished_loading(self.ui_manager)
+                self.check_video_availability()
 
     def update_particles(self):
         self.particles.groups.draw(self.ui.screen_surf)
@@ -230,7 +234,6 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 GameFlag.is_running = False
-                self.quit()
             if event.type == pygame.USEREVENT:
                 self.handle_user_events(event)
             if event.type == pygame.KEYDOWN:
@@ -252,3 +255,5 @@ class Game:
                 self.process_video_mode()
             else:
                 self.spawn_default_particles()
+
+        self.quit()

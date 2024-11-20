@@ -1,6 +1,3 @@
-import random
-from random import randint
-
 import pygame.sprite
 
 from particlesimulation.constants import *
@@ -23,8 +20,6 @@ class Particle(pygame.sprite.Sprite):
         self.speed = speed
         self.alpha = 255
         self.fade_speed = fade_speed
-
-        self.create_surf()
 
     def create_surf(self):
         self.image = pygame.Surface((self.size, self.size)).convert_alpha()

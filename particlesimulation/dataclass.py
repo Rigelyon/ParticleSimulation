@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pygame
 
-from particlesimulation.constants import *
+from .constants import *
 
 
 @dataclass

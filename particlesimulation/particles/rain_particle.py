@@ -69,7 +69,7 @@ class RainParticle(Particle):
         fade_speed: int = 240,
     ):
         super().__init__(groups, pos, color, size, speed, fade_speed)
-        self.group = groups
+        self.groups = groups
         self.pos = pos
         self.color = color
         self.size = size
@@ -80,8 +80,6 @@ class RainParticle(Particle):
         self.random_side_multiplier = randint(1, 2)
 
         self.create_surf()
-        self.splash = Splash(groups, self.pos)
-        self.splash.draw()
 
     def move(self, dt):
         move_side = pygame.math.Vector2(-1, 0) * self.speed * dt
@@ -91,6 +89,10 @@ class RainParticle(Particle):
             + move_down * self.random_down_multiplier
         )
         self.rect.center = self.pos
+
+    def spawn_splash(self):
+        self.splash = Splash(self.groups, self.pos)
+        self.splash.draw()
 
     def update(self, dt):
         self.move(dt)

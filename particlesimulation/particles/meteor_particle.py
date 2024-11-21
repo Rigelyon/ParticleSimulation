@@ -2,7 +2,7 @@ from random import randint
 
 import pygame
 
-from particlesimulation.constants import BG_COLOR
+from particlesimulation.constants import *
 from particlesimulation.particles.particle import Particle
 
 

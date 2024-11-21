@@ -1,4 +1,29 @@
 {
+  "defaults": {
+    "colours": {
+      "normal_bg": "#1e1e2e",
+      "hovered_bg": "#3e3b58",
+      "disabled_bg": "#11111b",
+      "selected_bg": "#89b4fa",
+      "dark_bg": "#11111b",
+      "disabled_dark_bg": "#11111b",
+      "normal_text": "#D9E0EE",
+      "hovered_text": "#ffffff",
+      "selected_text": "#ffffff",
+      "disabled_text": "#A6ADC8",
+      "link_text": "#C5A9E5",
+      "link_hover": "#9F6FFF",
+      "link_selected": "#9D7FBD",
+      "text_shadow": "#6E6C7E",
+      "normal_border": "#6C6A88",
+      "hovered_border": "#8C89B2",
+      "disabled_border": "#53536D",
+      "selected_border": "#B6C6E1",
+      "active_border": "#B6C6E1",
+      "filled_bar": "#F5A97F",
+      "unfilled_bar": "#6C6A88"
+    }
+  },
   "@button": {
     "misc": {
       "shape": "rounded_rectangle"
@@ -7,6 +32,12 @@
   "@particle_button": {
     "misc": {
       "shape": "rounded_rectangle"
+    }
+  },
+  "@loading_bar": {
+    "colours": {
+      "filled_bar": "#89b4fa",
+      "unfilled_bar": "#313244"
     }
   },
   "@setting_indicator": {
@@ -26,7 +57,8 @@
   "@alert_text": {
     "misc": {
       "text_vert_alignment": "top",
-      "text_horiz_alignment": "left"
+      "text_horiz_alignment": "left",
+      "border_width": "0"
     }
   },
   "@debug_text": {

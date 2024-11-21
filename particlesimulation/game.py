@@ -32,6 +32,7 @@ class Game:
     def first_run_init(self):
         self.ui.set_particle_types("circle")
         self.check_video_availability()
+        self.ui.change_bt_status(ParticleFlag.current_type)
 
     def process_video_mode(self):
         if GameFlag.current_video_frame < self.get_frames_count:
@@ -59,23 +60,31 @@ class Game:
             if hasattr(self.ui, "restart_dialog_window"):
                 if event.ui_element == self.ui.restart_dialog_window:
                     self.ui.on_close_restart_dialog_window()
+        if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+            if event.ui_element == self.ui.clear_particle_bt:
+                self.particles.kill_all()
 
     def handle_keydown_events(self, event=None):
         if event.key == pygame.K_SPACE:
             self.toggle_video_playback()
         if event.key == pygame.K_c:
             self.particles.kill_all()
+        if event.key == pygame.K_9:
+            GameFlag.current_video_frame = 5500
+            self.video_manager.cap.set(cv2.CAP_PROP_POS_FRAMES, 5500)
 
     def start_video_playback(self):
         self.particles.kill_all()
+        self.ui.set_particle_types("circle")
         self.video_manager.music.play()
         self.ui.ui_state_enabled_video()
         self.video_manager.init_capture()
 
     def stop_video_playback(self):
-        GameFlag.current_video_frame = 0
         self.video_manager.music.stop()
         self.ui.ui_state_disabled_video()
+        GameFlag.current_video_frame = 0
+        GameFlag.is_video_running = False
         self.video_manager.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
     def toggle_video_playback(self):
@@ -144,10 +153,13 @@ class Game:
     def refresh_screen(self):
         self.window.fill(self.ui_manager.ui_theme.get_colour("dark_bg"))
 
+    def update_mini_player(self):
+        if GameFlag.is_video_running:
+            self.ui.draw_mini_player(self.window, self.video_manager.play_mini_player())
+
     def set_frame_rate(self):
         if GameFlag.is_video_running:
             GameFlag.max_frame_rate = self.video_manager.get_fps
-            self.ui.draw_mini_player(self.window, self.video_manager.play_mini_player())
         else:
             GameFlag.max_frame_rate = 120
 
@@ -156,15 +168,22 @@ class Game:
 
     def check_video_availability(self):
         coords_dir = os.path.join(self.this_dir, "coordinates")
-        if os.path.isdir(coords_dir) and os.listdir(coords_dir):
-            GameFlag.is_video_loaded = True
-            print("Video is loaded")
+        if os.path.isdir(coords_dir):
+            files = os.listdir(coords_dir)
+            if len(files) >= self.video_manager.get_max_frames - 1:
+                GameFlag.is_video_loaded = True
+                print("Video is loaded")
+            else:
+                GameFlag.is_video_loaded = False
+                print(
+                    f"Video not loaded (folder empty or files less than {self.video_manager.get_max_frames-1})"
+                )
         else:
             GameFlag.is_video_loaded = False
             print("Video not loaded")
 
     def fetch_info(self):
-        self.get_frames_count = self.video_manager.files_count
+        self.get_frames_count = self.video_manager.coords_files_count
         self.get_amount = len(self.particles.groups)
         self.get_fps = round(self.clock.get_fps(), 2)
 
@@ -225,6 +244,7 @@ class Game:
 
         self.fetch_info()
         self.update_ui_elements()
+        self.update_mini_player()
 
         self.update_particles()
         self.check_particles()

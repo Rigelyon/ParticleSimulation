@@ -1,14 +1,14 @@
 import random
 from random import randint
+
 import pygame
 
+from particlesimulation.constants import *
+from particlesimulation.dataclass import GameFlag
 from particlesimulation.particles.circle_particle import CircleParticle
 from particlesimulation.particles.meteor_particle import MeteorParticle
 from particlesimulation.particles.sakura_particle import SakuraParticle
 from particlesimulation.particles.snow_particle import SnowParticle
-from particlesimulation.constants import *
-from particlesimulation.dataclass import GameFlag
-from particlesimulation.particles.particle import Particle
 
 
 class ParticlesManager:

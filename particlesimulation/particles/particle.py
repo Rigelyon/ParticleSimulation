@@ -1,5 +1,3 @@
-from math import radians, sin, cos
-
 import pygame.sprite
 
 from particlesimulation.constants import *

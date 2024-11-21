@@ -1,4 +1,5 @@
-from random import randint
+import os
+from random import randint, uniform
 
 import pygame
 
@@ -21,6 +22,25 @@ class SakuraParticle(Particle):
         self.spin_radius = 3
 
         self.create_surf()
+
+    def create_surf(self):
+        this_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(this_dir)
+        sprite_dir = os.path.join(parent_dir, "assets", "particles", "sakura_petal.png")
+
+        sprite = pygame.image.load(sprite_dir).convert_alpha()
+        scaled_sprite = pygame.transform.scale(sprite, (self.size, self.size))
+        tinted_sprite = self.tint_image(scaled_sprite, self.color)
+
+        angle = uniform(0,360)
+        self.image = pygame.transform.rotate(tinted_sprite,angle)
+
+        self.rect = self.image.get_rect(center=self.pos)
+
+    def tint_image(self, image, color):
+        tinted_sprite = image.copy()
+        tinted_sprite.fill(color, special_flags=pygame.BLEND_RGBA_MULT)
+        return tinted_sprite
 
     def move(self, dt):
         move_side = pygame.math.Vector2(-1, 0) * self.speed * dt

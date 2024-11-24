@@ -17,7 +17,7 @@ class SplashParticle(Particle):
         self.lifetime = 20
 
     def move(self, dt):
-        move_side = pygame.math.Vector2(randint(-1, 0), 0) * randint(50, 100) * dt
+        move_side = pygame.math.Vector2(randint(-1, 1), 0) * randint(50, 100) * dt
         move_up = pygame.math.Vector2(0, -1) * randint(50, 100) * dt
         self.pos += (
             move_side * self.random_side_multiplier

@@ -1,10 +1,17 @@
 import os
+import sys
 from random import randint, uniform
 
 import pygame
 
 from particlesimulation.particles.particle import Particle
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 class SakuraParticle(Particle):
     def __init__(self, groups, pos, color, size, speed, fade_speed):
@@ -24,9 +31,8 @@ class SakuraParticle(Particle):
         self.create_surf()
 
     def create_surf(self):
-        this_dir = os.path.dirname(os.path.abspath(__file__))
-        parent_dir = os.path.dirname(this_dir)
-        sprite_dir = os.path.join(parent_dir, "assets", "particles", "sakura_petal.png")
+        this_dir = resource_path("")
+        sprite_dir = os.path.join(this_dir, "assets", "particles", "sakura_petal.png")
 
         sprite = pygame.image.load(sprite_dir).convert_alpha()
         scaled_sprite = pygame.transform.scale(sprite, (self.size, self.size))

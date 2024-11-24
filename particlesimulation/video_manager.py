@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 
 import cv2
 import numpy as np
@@ -12,10 +13,16 @@ from particlesimulation.constants import (
 )
 from particlesimulation.dataclass import UIFlag, GameFlag
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 class VideoManager:
     def __init__(self):
-        self.this_dir = os.path.dirname(os.path.abspath(__file__))
+        self.this_dir = resource_path("")
         self.images_dir = os.path.join(self.this_dir, "assets", "images")
         self.coords_file_dir = os.path.join(self.this_dir, "coordinates")
         self.video_path = os.path.join(self.this_dir, "assets", "video.mp4")

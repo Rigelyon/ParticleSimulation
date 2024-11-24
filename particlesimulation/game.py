@@ -12,6 +12,12 @@ from particlesimulation.particles.particles_manager import ParticlesManager
 from particlesimulation.ui import UI
 from particlesimulation.video_manager import VideoManager
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 class Game:
     def __init__(self):
@@ -20,7 +26,7 @@ class Game:
         pygame.display.set_caption(GAME_TITLE)
         self.clock = pygame.time.Clock()
 
-        self.this_dir = os.path.dirname(os.path.abspath(__file__))
+        self.this_dir = resource_path("")
         theme_path = os.path.join(self.this_dir, "styles", "theme.json")
         self.ui_manager = UIManager((WINDOW_WIDTH, WINDOW_HEIGHT), theme_path)
 

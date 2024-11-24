@@ -1,10 +1,18 @@
 import os
+import sys
 from random import uniform
 
 import pygame
 
 from particlesimulation.particles.particle import Particle
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+        print(f"Resolved path: {os.path.join(base_path, relative_path)}")
+    return os.path.join(base_path, relative_path)
 
 class SnowParticle(Particle):
     def __init__(
@@ -26,10 +34,10 @@ class SnowParticle(Particle):
         self.create_surf()
 
     def create_surf(self):
-        this_dir = os.path.dirname(os.path.abspath(__file__))
-        parent_dir = os.path.dirname(this_dir)
-        sprite_dir = os.path.join(parent_dir, "assets", "particles", "snow.png")
+        this_dir = resource_path("")
+        sprite_dir = os.path.join(this_dir, "assets", "particles", "snow.png")
 
+        print(f"Sprite directory: {sprite_dir}")  # Debug output
         sprite = pygame.image.load(sprite_dir).convert_alpha()
         scaled_sprite = pygame.transform.scale(sprite, (self.size, self.size))
         tinted_sprite = self.tint_image(scaled_sprite, self.color)

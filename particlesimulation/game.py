@@ -162,7 +162,7 @@ class Game:
 
     def set_frame_rate(self):
         if GameFlag.is_video_running:
-            GameFlag.max_frame_rate = self.video_manager.get_fps
+            GameFlag.max_frame_rate = self.video_manager.get_fps + 0.5
         else:
             GameFlag.max_frame_rate = 120
 

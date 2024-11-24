@@ -304,7 +304,7 @@ class UI:
 
     def draw_color_picker_dialog(self, ui_manager):
         self.color_picker = UIColourPickerDialog(
-            pygame.Rect((WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4), (500, 300)),
+            pygame.Rect((WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4), (500, 390)),
             ui_manager,
             window_title="Choose Color",
         )

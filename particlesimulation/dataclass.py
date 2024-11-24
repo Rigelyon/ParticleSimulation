@@ -24,7 +24,7 @@ class ParticleFlag:
     default_min_fade = 50
     default_max_fade = 1000
     default_min_size = 1
-    default_max_size = 200
+    default_max_size = 100
     default_min_speed = 1
     default_max_speed = 600
 

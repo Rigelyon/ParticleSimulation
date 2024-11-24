@@ -1,3 +1,4 @@
+import math
 import random
 from random import randint
 
@@ -6,7 +7,11 @@ import pygame
 from particlesimulation.constants import *
 from particlesimulation.dataclass import GameFlag
 from particlesimulation.particles.circle_particle import CircleParticle
-from particlesimulation.particles.meteor_particle import MeteorParticle
+from particlesimulation.particles.firefly_particle import FireflyParticle
+from particlesimulation.particles.leaves_particle import LeavesParticle
+from particlesimulation.particles.rain_particle import RainParticle
+from particlesimulation.particles.vortex_particle import VortexParticle
+from particlesimulation.particles.steam_particle import SteamParticle
 from particlesimulation.particles.sakura_particle import SakuraParticle
 from particlesimulation.particles.snow_particle import SnowParticle
 
@@ -31,12 +36,12 @@ class ParticlesManager:
         draw_method = {
             "circle": self._create_circle_particle,
             "snow": self._create_snow_particle,
-            "leaves": None,
-            "meteor": self._create_meteor_particle,
-            "firefly": None,
+            "leaves": self._create_leaves_particle,
+            "steam": self._create_steam_particle,
+            "firefly": self._create_firefly_particle,
             "rain": self._create_rain_particle,
             "sakura": self._create_sakura_particle,
-            "stars": None,
+            "vortex": self._create_vortex_particle,
         }.get(types)
 
         if draw_method:
@@ -91,6 +96,17 @@ class ParticlesManager:
                 0 <= particle.pos[0] <= SCREEN_WIDTH
                 and -20 < particle.pos[1] < SCREEN_HEIGHT + 20
             ):
+                particle.kill()
+
+    def kill_at_cursor(self, pos):
+        threshold = 50
+        adjust_pos = ((pos[0] + -15), (pos[1] + -15))
+        for particle in self.groups:
+            distance = math.sqrt(
+                (particle.pos[0] - adjust_pos[0]) ** 2
+                + (particle.pos[1] - adjust_pos[1]) ** 2
+            )
+            if distance <= threshold:
                 particle.kill()
 
     def kill_all(self):
@@ -160,6 +176,36 @@ class ParticlesManager:
                 fade_speed=fade_speed,
             )
 
+    def _create_leaves_particle(
+        self,
+        amount,
+        color,
+        min_speed,
+        max_speed,
+        min_size,
+        max_size,
+        min_fade,
+        max_fade,
+        pixel_pos=None,
+    ):
+        for _ in range(amount):
+            if GameFlag.is_video_running:
+                pos = pixel_pos
+            else:
+                pos = randint(0, SCREEN_WIDTH), randint(-10, SCREEN_HEIGHT)
+            speed = randint(min_speed, max_speed)
+            size = randint(min_size, max_size)
+            fade_speed = randint(min_fade, max_fade)
+
+            LeavesParticle(
+                groups=self.groups,
+                pos=pos,
+                color=color,
+                speed=speed,
+                size=size,
+                fade_speed=fade_speed,
+            )
+
     def _create_sakura_particle(
         self,
         amount,
@@ -190,7 +236,7 @@ class ParticlesManager:
                 fade_speed=fade_speed,
             )
 
-    def _create_meteor_particle(
+    def _create_steam_particle(
         self,
         amount,
         color,
@@ -211,7 +257,37 @@ class ParticlesManager:
             size = randint(min_size, max_size)
             fade_speed = randint(min_fade, max_fade)
 
-            MeteorParticle(
+            SteamParticle(
+                groups=self.groups,
+                pos=pos,
+                color=color,
+                speed=speed,
+                size=size,
+                fade_speed=fade_speed,
+            )
+
+    def _create_firefly_particle(
+        self,
+        amount,
+        color,
+        min_speed,
+        max_speed,
+        min_size,
+        max_size,
+        min_fade,
+        max_fade,
+        pixel_pos=None,
+    ):
+        for _ in range(amount):
+            if GameFlag.is_video_running:
+                pos = pixel_pos
+            else:
+                pos = randint(0, SCREEN_WIDTH), randint(-10, SCREEN_HEIGHT)
+            speed = randint(min_speed, max_speed)
+            size = randint(min_size, max_size)
+            fade_speed = randint(min_fade, max_fade)
+
+            FireflyParticle(
                 groups=self.groups,
                 pos=pos,
                 color=color,
@@ -236,12 +312,42 @@ class ParticlesManager:
             if GameFlag.is_video_running:
                 pos = pixel_pos
             else:
+                pos = randint(0, SCREEN_WIDTH), randint(-10, 40)
+            speed = randint(min_speed, max_speed)
+            size = randint(min_size, max_size)
+            fade_speed = randint(min_fade, max_fade)
+
+            RainParticle(
+                groups=self.groups,
+                pos=pos,
+                color=color,
+                speed=speed,
+                size=size,
+                fade_speed=fade_speed,
+            )
+
+    def _create_vortex_particle(
+        self,
+        amount,
+        color,
+        min_speed,
+        max_speed,
+        min_size,
+        max_size,
+        min_fade,
+        max_fade,
+        pixel_pos=None,
+    ):
+        for _ in range(amount):
+            if GameFlag.is_video_running:
+                pos = pixel_pos
+            else:
                 pos = randint(0, SCREEN_WIDTH), randint(-10, SCREEN_HEIGHT)
             speed = randint(min_speed, max_speed)
             size = randint(min_size, max_size)
             fade_speed = randint(min_fade, max_fade)
 
-            MeteorParticle(
+            VortexParticle(
                 groups=self.groups,
                 pos=pos,
                 color=color,

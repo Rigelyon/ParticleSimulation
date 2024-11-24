@@ -62,10 +62,19 @@ class UI:
             case "leaves":
                 self.change_bt_status("leaves")
                 ParticleFlag.current_type = "leaves"
-            case "meteor":
-                self.change_bt_status("meteor")
-                ParticleFlag.current_type = "meteor"
-                ParticleFlag.current_color = pygame.Color(255, 255, 255)
+                ParticleFlag.current_color = pygame.Color(219, 114, 7)
+                if not GameFlag.is_video_running:
+                    self.multiplier_slider.set_current_value(1)
+                    self.min_fade_slider.set_current_value(50)
+                    self.max_fade_slider.set_current_value(100)
+                    self.min_size_slider.set_current_value(10)
+                    self.max_size_slider.set_current_value(25)
+                    self.min_speed_slider.set_current_value(50)
+                    self.max_speed_slider.set_current_value(60)
+            case "steam":
+                self.change_bt_status("steam")
+                ParticleFlag.current_type = "steam"
+                ParticleFlag.current_color = pygame.Color(225, 245, 254)
                 if not GameFlag.is_video_running:
                     self.multiplier_slider.set_current_value(1)
                     self.min_fade_slider.set_current_value(
@@ -76,19 +85,28 @@ class UI:
                     )
                     self.min_size_slider.set_current_value(3)
                     self.max_size_slider.set_current_value(10)
-                    self.min_speed_slider.set_current_value(
-                        ParticleFlag.default_max_speed - 10
-                    )
-                    self.max_speed_slider.set_current_value(
-                        ParticleFlag.default_max_speed
-                    )
+                    self.min_speed_slider.set_current_value(50)
+                    self.max_speed_slider.set_current_value(80)
             case "firefly":
                 self.change_bt_status("firefly")
                 ParticleFlag.current_type = "firefly"
+                ParticleFlag.current_color = pygame.Color(255, 241, 118)
+                if not GameFlag.is_video_running:
+                    self.multiplier_slider.set_current_value(1)
+                    self.min_fade_slider.set_current_value(
+                        ParticleFlag.default_min_fade
+                    )
+                    self.max_fade_slider.set_current_value(
+                        ParticleFlag.default_min_fade + 1
+                    )
+                    self.min_size_slider.set_current_value(3)
+                    self.max_size_slider.set_current_value(10)
+                    self.min_speed_slider.set_current_value(50)
+                    self.max_speed_slider.set_current_value(80)
             case "rain":
                 self.change_bt_status("rain")
                 ParticleFlag.current_type = "rain"
-                ParticleFlag.current_color = pygame.Color(255, 255, 255)
+                ParticleFlag.current_color = pygame.Color(129, 212, 250)
                 if not GameFlag.is_video_running:
                     self.multiplier_slider.set_current_value(1)
                     self.min_fade_slider.set_current_value(
@@ -121,19 +139,32 @@ class UI:
                     self.max_size_slider.set_current_value(20)
                     self.min_speed_slider.set_current_value(20)
                     self.max_speed_slider.set_current_value(80)
-            case "stars":
-                self.change_bt_status("stars")
-                ParticleFlag.current_type = "stars"
+            case "vortex":
+                self.change_bt_status("vortex")
+                ParticleFlag.current_type = "vortex"
+                ParticleFlag.current_color = pygame.Color(129, 212, 250)
+                if not GameFlag.is_video_running:
+                    self.multiplier_slider.set_current_value(1)
+                    self.min_fade_slider.set_current_value(
+                        ParticleFlag.default_min_fade
+                    )
+                    self.max_fade_slider.set_current_value(
+                        ParticleFlag.default_min_fade + 1
+                    )
+                    self.min_size_slider.set_current_value(1)
+                    self.max_size_slider.set_current_value(10)
+                    self.min_speed_slider.set_current_value(20)
+                    self.max_speed_slider.set_current_value(80)
 
     def change_bt_status(self, types):
         self.circle_bt.unselect()
         self.snow_bt.unselect()
         self.leaves_bt.unselect()
-        self.meteor_bt.unselect()
+        self.steam_bt.unselect()
         self.firefly_bt.unselect()
         self.rain_bt.unselect()
         self.sakura_bt.unselect()
-        self.stars_bt.unselect()
+        self.vortex_bt.unselect()
 
         match types:
             case "circle":
@@ -142,16 +173,16 @@ class UI:
                 self.snow_bt.select()
             case "leaves":
                 self.leaves_bt.select()
-            case "meteor":
-                self.meteor_bt.select()
+            case "steam":
+                self.steam_bt.select()
             case "firefly":
                 self.firefly_bt.select()
             case "rain":
                 self.rain_bt.select()
             case "sakura":
                 self.sakura_bt.select()
-            case "stars":
-                self.stars_bt.select()
+            case "vortex":
+                self.vortex_bt.select()
 
     def enforce_slider_limit(self):
         min_fade = self.min_fade_slider.get_current_value()
@@ -180,11 +211,11 @@ class UI:
         self.circle_bt.disable()
         self.snow_bt.disable()
         self.leaves_bt.disable()
-        self.meteor_bt.disable()
+        self.steam_bt.disable()
         self.firefly_bt.disable()
         self.rain_bt.disable()
         self.sakura_bt.disable()
-        self.stars_bt.disable()
+        self.vortex_bt.disable()
         self.multiplier_slider.set_current_value(1)
         self.multiplier_slider.disable()
         self.multiplier_label.disable()
@@ -223,11 +254,11 @@ class UI:
         self.circle_bt.enable()
         self.snow_bt.enable()
         self.leaves_bt.enable()
-        self.meteor_bt.enable()
+        self.steam_bt.enable()
         self.firefly_bt.enable()
         self.rain_bt.enable()
         self.sakura_bt.enable()
-        self.stars_bt.enable()
+        self.vortex_bt.enable()
         self.multiplier_slider.enable()
         self.multiplier_label.enable()
         self.min_fade_slider.enable()
@@ -483,12 +514,12 @@ class UI:
             anchors={"left": "left", "left_target": self.snow_bt},
             object_id=ObjectID(class_id="@particle_button"),
         )
-        self.meteor_bt = UIButton(
+        self.steam_bt = UIButton(
             pygame.Rect((UIFlag.bt_spacing, UIFlag.start_y), PARTICLE_BT_SIZE),
-            "Meteor",
+            "Steam",
             ui_manager,
             container,
-            command=lambda: self.set_particle_types("meteor"),
+            command=lambda: self.set_particle_types("steam"),
             anchors={"left": "left", "left_target": self.leaves_bt},
             object_id=ObjectID(class_id="@particle_button"),
         )
@@ -529,16 +560,16 @@ class UI:
             },
             object_id=ObjectID(class_id="@particle_button"),
         )
-        self.stars_bt = UIButton(
+        self.vortex_bt = UIButton(
             pygame.Rect((UIFlag.bt_spacing, UIFlag.bt_spacing), PARTICLE_BT_SIZE),
-            "Stars",
+            "Vortex",
             ui_manager,
             container,
-            command=lambda: self.set_particle_types("stars"),
+            command=lambda: self.set_particle_types("vortex"),
             anchors={
                 "top": "top",
                 "left": "left",
-                "top_target": self.meteor_bt,
+                "top_target": self.steam_bt,
                 "left_target": self.sakura_bt,
             },
             object_id=ObjectID(class_id="@particle_button"),

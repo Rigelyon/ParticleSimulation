@@ -102,9 +102,9 @@ class Game:
 
     def get_pixels_threshold_video(self, dark_pixels):
         dark_pixels_threshold = [
-            450,
-            400,
-            350,
+            # 450,
+            # 400,
+            # 350,
             300,
             250,
             200,
@@ -258,6 +258,11 @@ class Game:
                 self.handle_user_events(event)
             if event.type == pygame.KEYDOWN:
                 self.handle_keydown_events(event)
+            if pygame.mouse.get_pressed()[0]:
+                try:
+                    self.particles.kill_at_cursor(event.pos)
+                except AttributeError:
+                    pass
 
             self.ui_manager.process_events(event)
 

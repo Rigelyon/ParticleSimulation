@@ -63,6 +63,12 @@ class Game:
         if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == self.ui.clear_particle_bt:
                 self.particles.kill_all()
+        if event.user_type == pygame_gui.UI_COLOUR_PICKER_COLOUR_PICKED:
+            if event.ui_element == self.ui.color_picker:
+                self.ui.on_picked_colour_picker()
+        if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+            if event.ui_element == self.ui.chose_color_bt:
+                self.ui.color_picker.set_colour(ParticleFlag.current_color)
 
     def handle_keydown_events(self, event=None):
         if event.key == pygame.K_SPACE:

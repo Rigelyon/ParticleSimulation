@@ -309,7 +309,6 @@ class UI:
             initial_colour=pygame.Color(BASE_COLOR),
             window_title="Choose Color",
         )
-        self.current_color = self.color_picker.get_colour()
 
     def draw_container(self, ui_manager):
         self.scroll_container = UIScrollingContainer(
@@ -319,6 +318,9 @@ class UI:
             manager=ui_manager,
             allow_scroll_x=False,
         )
+
+    def on_picked_colour_picker(self):
+        ParticleFlag.current_color = self.color_picker.get_colour()
 
     def on_close_restart_dialog_window(self):
         self.restart_dialog_window.kill()
@@ -575,7 +577,6 @@ class UI:
             object_id=ObjectID(class_id="@particle_button"),
         )
 
-        # TODO: Fix confirm
         self.chose_color_bt = UIButton(
             pygame.Rect(
                 (UIFlag.start_x, UIFlag.separator_spacing),

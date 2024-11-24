@@ -306,7 +306,7 @@ class UI:
         self.color_picker = UIColourPickerDialog(
             pygame.Rect((WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4), (500, 300)),
             ui_manager,
-            initial_colour=pygame.Color(BASE_COLOR),
+            initial_colour=ParticleFlag.current_color,
             window_title="Choose Color",
         )
 

@@ -162,3 +162,4 @@ cython_debug/
 #.idea/
 /particlesimulation/assets/images/
 /particlesimulation/coordinates/
+.idea/

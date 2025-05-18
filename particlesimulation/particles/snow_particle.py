@@ -11,7 +11,6 @@ def resource_path(relative_path):
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")
-        print(f"Resolved path: {os.path.join(base_path, relative_path)}")
     return os.path.join(base_path, relative_path)
 
 class SnowParticle(Particle):
@@ -37,7 +36,6 @@ class SnowParticle(Particle):
         this_dir = resource_path("")
         sprite_dir = os.path.join(this_dir, "assets", "particles", "snow.png")
 
-        print(f"Sprite directory: {sprite_dir}")  # Debug output
         sprite = pygame.image.load(sprite_dir).convert_alpha()
         scaled_sprite = pygame.transform.scale(sprite, (self.size, self.size))
         tinted_sprite = self.tint_image(scaled_sprite, self.color)
